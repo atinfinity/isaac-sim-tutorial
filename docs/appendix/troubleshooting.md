@@ -142,7 +142,7 @@ TODO
 
 ### Create メニューに Jetbot がない {#jetbot-not-in-menu}
 
-`Create > Robots` に直接並んでいるのは、Ant・Spot・Franka・Humanoid・Nova Carter・Quadcopter だけです。Jetbot は `Create > Robots > Asset Browser` から開くフォルダの `NVIDIA > Jetbot` にある `jetbot.usd` を、ビューポートにドラッグ&ドロップして配置します。
+`Create > Robots` に直接並んでいるのは、Ant・Spot・Franka・Humanoid・Nova Carter・Quadcopter だけです。Jetbot は `Create > Robots > Asset Browser` で Content タブを開き、左のツリーで `Isaac Sim` の下の `Robots_Multiphysics > NVIDIA > Jetbot` にある `jetbot.usda` を、ビューポートにドラッグ&ドロップして配置します。
 
 ### 起動が遅い {#slow-startup}
 
