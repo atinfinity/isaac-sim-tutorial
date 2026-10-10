@@ -216,6 +216,14 @@ lidar = Lidar.create(
     config="Example_Rotary_2D",
     translations=[0.0, 0.0, 0.12],
 )
+# Example_Rotary_2D のままだと、近い物体を検出しない
+#   nearRangeM = 1: 1 m より近い点を捨てる
+#   minDistBetweenEchosM = 0.4: 約 0.4 m より近い点も出てこない (検証環境で確認)
+# Jetbot のまわりの近い物体も測れるように、この 2 つを変える。
+# 最小距離は、Jetbot 自身 (約 8 cm 先のアンテナ) を測らないように 10 cm にする
+lidar_prim = stage_utils.get_current_stage().GetPrimAtPath("/World/Jetbot/chassis/lidar")
+lidar_prim.GetAttribute("omni:sensor:Core:nearRangeM").Set(0.1)
+lidar_prim.GetAttribute("omni:sensor:Core:minDistBetweenEchosM").Set(0.0)
 sensor = LidarSensor(lidar, annotators=["generic-model-output"])
 if args.livestream:
     sensor.attach_writer("draw-point-cloud")
