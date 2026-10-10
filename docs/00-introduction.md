@@ -128,6 +128,10 @@ cd isaac-sim-tutorial
 | Prim | Stage に置かれる要素。`/World/Cube` のようなパスで表す (3 章) |
 | Attribute | Prim が持つ値 (大きさ、色、位置など) (3 章) |
 | Xform | 子の Prim をまとめ、位置・回転・スケールを与える Prim (3 章) |
+| ワールド座標系 | シーン全体の基準となる座標系。Isaac Sim では右手系で X 前・Y 左・Z 上 (3 章) |
+| ローカル座標 | 親の Prim から見た位置や向き (3 章) |
+| metersPerUnit | USD の Stage で 1 単位が何メートルかを表す値。Isaac Sim の標準は 1.0 (3 章) |
+| 四元数 (クォータニオン) | 4 つの数で回転を表す方法。Isaac Sim の API では `(w, x, y, z)` の順 (3 章) |
 | Reference | 別の USD ファイルを Prim として取り込む仕組み。アセットの読み込みに使う (3 章) |
 | アセット | ロボットや環境などの、再利用できる USD ファイル |
 

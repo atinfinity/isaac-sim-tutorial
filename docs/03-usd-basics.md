@@ -1,9 +1,9 @@
 # 3. USD の基礎
 
 !!! info "この章で学ぶこと"
-    Isaac Sim のシーンを表現している USD の基本概念 (Stage・Prim・Attribute・Xform・Reference) を、Python で実際にファイルを作りながら理解します。
+    Isaac Sim のシーンを表現している USD の基本概念 (Stage・Prim・Attribute・Xform・Reference) と、Isaac Sim の座標系・単位の約束ごとを、Python で実際にファイルを作りながら理解します。
 
-    - **所要時間**: 30 分
+    - **所要時間**: 45 分
     - **前提**: 2 章
     - **対象バージョン**: Isaac Sim 6.1.0
 
@@ -138,8 +138,8 @@ def Xform "World"
 - `def <型> "<名前>"` が Prim の定義で、`{ }` の入れ子がそのまま階層になっています
 - `{ }` の中に Attribute が `型 名前 = 値` の形で並んでいます
 
-!!! note "Isaac Sim の座標系と単位"
-    Isaac Sim では **Z 軸が上**、**1 単位 = 1 m** を標準としています。USD 自体は Y 軸が上の Stage も扱えるため、自分で Stage を作るときは `upAxis` と `metersPerUnit` を明示しておくと安全です。
+!!! note "`upAxis` と `metersPerUnit`"
+    コードの中で設定している `upAxis = "Z"` と `metersPerUnit = 1` は、Isaac Sim の座標系と単位に合わせるための設定です。詳しくは [座標系と単位](#coordinate-systems) で説明します。
 
 ## Xform と座標系
 
@@ -189,6 +189,117 @@ Cart を x = 2.0 に動かした後の Sensor のワールド位置: (2, 0.2, 0.
 - 台車を動かすと、センサも一緒に動きます
 
 この考え方は、5 章でロボットを動かすときや、6 章でロボットにセンサを取り付けるときにそのまま使います。
+
+## 座標系と単位 {#coordinate-systems}
+
+ロボットのシミュレーションでは、「どちらが前か」「1 が何メートルか」「角度は度かラジアンか」を取り違えると、ロボットが思わぬ方向へ動いたり、物体が極端に大きくなったりします。ここで Isaac Sim の約束ごとをまとめておきます。
+
+### ワールド座標系
+
+Isaac Sim のワールド座標系は **右手系** で、次の向きを標準としています。
+
+| 軸 | 向き |
+| --- | --- |
+| +X | 前 |
+| +Y | 左 |
+| +Z | 上 |
+
+右手の親指を X、人差し指を Y、中指を Z に向けた形が右手系です。z 軸まわりの回転は、上から見て **反時計回りが正** になります。
+
+!!! note "ROS を知っている方へ"
+    この向き (X 前・Y 左・Z 上) は、ROS の標準 (REP 103) と同じです。
+
+USD 自体は Y 軸が上の Stage も扱えます。自分で Stage を作るときは、これまでのサンプルのように `upAxis` を `"Z"` に明示しておくと安全です。
+
+### 単位
+
+Isaac Sim の物理シミュレーションで使う標準の単位は次のとおりです。
+
+| 量 | 単位 |
+| --- | --- |
+| 長さ | メートル (m) |
+| 質量 | キログラム (kg) |
+| 時間 | 秒 (s) |
+| 力 | ニュートン (N) |
+| 速度 / 角速度 | m/s / rad/s |
+| 物理ステップの時間幅 (dt) | 秒。標準は 1/60 秒 |
+
+USD の Stage は、**1 単位が何メートルか** を `metersPerUnit` で持っています。Isaac Sim の標準は `metersPerUnit = 1.0` (1 単位 = 1 m) です。
+
+!!! warning "センチメートル単位のアセットに注意"
+    ほかの 3D ツールで作られたアセットには、`metersPerUnit = 0.01` (1 単位 = 1 cm) のものがあります。単位を考えずにメートル単位の Stage に読み込むと、100 倍の大きさになってしまいます。アセットを読み込んで極端に大きく (または小さく) 見えたら、まず `metersPerUnit` を確認してください。
+
+### 角度の単位: 度とラジアン
+
+角度の単位は、**USD では度**、**Isaac Sim の Python API (Core) と物理エンジン (PhysX) ではラジアン** です。
+
+| 扱う場所 | 角度の単位 | 例 |
+| --- | --- | --- |
+| USD の Attribute | 度 | `xformOp:rotateZ = 90` |
+| GUI の Property パネル | 度 | USD の値をそのまま表示する |
+| Isaac Sim の Python API | ラジアン | 関節の角度、角速度 |
+
+度とラジアンは `math.radians()` と `math.degrees()` で変換できます。
+
+### 回転の表し方: オイラー角と四元数
+
+回転の表し方には、主に次の 2 つがあります。
+
+- **オイラー角**: 「x 軸まわりに何度、y 軸まわりに何度、z 軸まわりに何度」と、軸ごとの回転角で表す。直感的だが、回転の順番によって結果が変わる
+- **四元数 (クォータニオン)**: 4 つの数 `(w, x, y, z)` で回転を表す。計算機で扱いやすく、Isaac Sim の API で姿勢を受け渡すときはこちらを使う
+
+z 軸まわりに角度 θ だけ回転する四元数は `(cos(θ/2), 0, 0, sin(θ/2))` です。回転しない状態は `(1, 0, 0, 0)` になります。
+
+!!! warning "四元数の成分の順番"
+    四元数の成分の順番は、ライブラリによって違います。
+
+    | ライブラリ | 順番 |
+    | --- | --- |
+    | Isaac Sim の Python API (Core)、USD | `(w, x, y, z)` |
+    | PhysX、SciPy、ROS | `(x, y, z, w)` |
+
+    ほかのライブラリと値をやり取りするときは、必ず順番を確認してください。
+
+### コードで確かめる
+
+`examples/03_usd_basics/04_units_and_rotation.py` で、「z 軸まわりに 90 度」の回転をいくつかの方法で表し、単位の違いを確かめます。
+
+```python title="examples/03_usd_basics/04_units_and_rotation.py (抜粋)"
+# 四元数 (クォータニオン)。USD と Isaac Sim Core の API は (w, x, y, z) の順
+quat = Gf.Rotation(Gf.Vec3d(0, 0, 1), angle_deg).GetQuat()
+
+by_euler = UsdGeom.Xform.Define(stage, "/World/ByEuler")
+by_euler.AddRotateZOp().Set(angle_deg)  # 度で指定
+
+by_quat = UsdGeom.Xform.Define(stage, "/World/ByQuat")
+by_quat.AddOrientOp().Set(Gf.Quatf(quat))  # 四元数で指定
+```
+
+実行結果は次のとおりです。
+
+```text
+角度: 90.0 度 = 1.5708 ラジアン
+四元数 (w, x, y, z) = (0.7071, 0.0000, 0.0000, 0.7071)
+前方 (1, 0, 0) を回転すると: (0.0, 1.0, 0.0)
+rotateZ = 90 と orient (四元数) は同じ回転か: True
+metersPerUnit = 0.01 の Stage で size = 30.0 の立方体は 0.30 m
+メートル単位 (metersPerUnit = 1.0) の Stage にそのまま読み込むと 30 m の立方体になる
+```
+
+- z 軸まわりに 90 度回すと、前 (+X) を向いていたものが左 (+Y) を向きます。反時計回りが正であることが確かめられます
+- `rotateZ` (度) と `orient` (四元数) は、書き方が違うだけで同じ回転を表しています
+
+### カメラの座標系
+
+カメラだけは、ワールド座標系と軸の向きの約束が異なります。USD のカメラは **-Z 方向を向き、+Y が画像の上** になります。ROS の画像データの座標系 (+Z が前、-Y が上) とも異なります。
+
+| 座標系 | 前 (視線の方向) | 上 |
+| --- | --- | --- |
+| ワールド座標系 | +X | +Z |
+| USD のカメラ | -Z | +Y |
+| ROS のカメラ (光学座標系) | +Z | -Y |
+
+カメラは 6 章で扱います。ここでは「カメラは軸の向きが違う」ことだけ覚えておけば十分です。
 
 ## Reference でアセットを読み込む
 
@@ -266,17 +377,22 @@ def Xform "World"
 - **Stage** はシーン全体、**Prim** はその中の要素で、`/World/Cube` のようなパスで階層を表す
 - Prim の値は **Attribute** として持つ
 - **Xform** は位置・回転・スケールを与え、子の位置は親から見たローカル座標で表す
+- ワールド座標系は右手系で **X 前・Y 左・Z 上**、長さは **メートル**
+- 角度は **USD では度**、**Isaac Sim の Python API ではラジアン**。四元数は `(w, x, y, z)` の順
 - **Reference** で別ファイルのアセットを取り込み、差分だけを上書きできる
 
 ## 演習
 
 1. `01_hello_stage.py` に円柱 (`UsdGeom.Cylinder`) を追加し、保存された `.usda` にどう現れるかを確認してください。
 2. `02_xform_hierarchy.py` で台車の回転を 180 度に変えると、センサのワールド位置はどうなるでしょうか。実行する前に予想してから確かめてください。
-3. `03_reference.py` で、`traffic_cone.usda` 側のコーンの高さを変えて実行し、シーン側の 2 つのコーンが両方とも変わることを確認してください。
+3. `04_units_and_rotation.py` を書き換えて、z 軸まわりに -90 度回転させたときの四元数と、前方 (1, 0, 0) が向く方向を確かめてください。
+4. `03_reference.py` で、`traffic_cone.usda` 側のコーンの高さを変えて実行し、シーン側の 2 つのコーンが両方とも変わることを確認してください。
 
 ## 参考リンク
 
 - [OpenUSD 公式ドキュメント](https://openusd.org/release/index.html)
 - [OpenUSD Terms and Concepts (用語集)](https://openusd.org/release/glossary.html)
 - [usd-core (PyPI)](https://pypi.org/project/usd-core/)
+- [Isaac Sim Conventions (座標系・単位の約束ごと)](https://docs.isaacsim.omniverse.nvidia.com/6.1.0/reference_material/reference_conventions.html)
+- [REP 103: Standard Units of Measure and Coordinate Conventions (ROS)](https://www.ros.org/reps/rep-0103.html)
 - [Isaac Sim ドキュメント](https://docs.isaacsim.omniverse.nvidia.com/6.1.0/index.html)
