@@ -3,7 +3,7 @@
 Docker 上で [NVIDIA Isaac Sim](https://developer.nvidia.com/isaac/sim) を動かし、Python からロボットのシミュレーションができるようになるまでを解説する、初学者向けのチュートリアルです。
 
 !!! warning "執筆中"
-    このチュートリアルは現在執筆中です。「執筆中」と表示されている章は、内容が未完成か、検証環境での動作確認が済んでいません。
+    このチュートリアルは現在執筆中です。下の [目次](#contents) で「執筆中」となっている章は、内容が未完成か、検証環境での動作確認が済んでいません。
 
 ## 対象読者 {#audience}
 
@@ -29,22 +29,24 @@ ROS 2 との連携や Isaac Lab による強化学習は扱いません。これ
 
 ## 目次 {#contents}
 
-| 章 | 内容 |
-| --- | --- |
-| [0. はじめに](00-introduction.md) | 対象読者・ゴール・全体の流れと Isaac Sim の概要 |
-| [1. 環境構築](01-setup.md) | Docker で Isaac Sim を起動し、ブラウザで画面を表示する |
-| [2. GUI の基本](02-gui-basics.md) | 画面構成を理解し、物体を置いて物理シミュレーションを動かす |
-| [3. USD の基礎](03-usd-basics.md) | シーンを表すデータ形式 USD の基本概念 |
-| [4. Python スタンドアロン入門](04-python-standalone.md) | Python スクリプトからシーンを作り、シミュレーションを動かす |
-| [5. ロボットを動かす](05-robot-control.md) | Jetbot を読み込み、差動二輪の制御で走らせる |
-| [6. センサ](06-sensors.md) | Jetbot にカメラと LiDAR を取り付け、データを取得・保存する |
-| [7. ミニプロジェクト](07-mini-project.md) | LiDAR で障害物を避けながらゴールへ向かう |
+| 章 | 内容 | 状態 |
+| --- | --- | --- |
+| [0. はじめに](00-introduction.md) | 対象読者・ゴール・全体の流れと Isaac Sim の概要 | 完成 |
+| [1. 環境構築](01-setup.md) | Docker で Isaac Sim を起動し、ブラウザで画面を表示する | 執筆中 |
+| [2. GUI の基本](02-gui-basics.md) | 画面構成を理解し、物体を置いて物理シミュレーションを動かす | 完成 |
+| [3. USD の基礎](03-usd-basics.md) | シーンを表すデータ形式 USD の基本概念 | 完成 |
+| [4. Python スタンドアロン入門](04-python-standalone.md) | Python スクリプトからシーンを作り、シミュレーションを動かす | 執筆中 |
+| [5. ロボットを動かす](05-robot-control.md) | Jetbot を読み込み、差動二輪の制御で走らせる | 執筆中 |
+| [6. センサ](06-sensors.md) | Jetbot にカメラと LiDAR を取り付け、データを取得・保存する | 執筆中 |
+| [7. ミニプロジェクト](07-mini-project.md) | LiDAR で障害物を避けながらゴールへ向かう | 執筆中 |
 
 付録
 
-- [A. クラウドで動かす](appendix/cloud.md)
-- [B. トラブルシューティング](appendix/troubleshooting.md)
-- [C. 次の一歩](appendix/next-steps.md)
+| 付録 | 状態 |
+| --- | --- |
+| [A. クラウドで動かす](appendix/cloud.md) | 執筆中 |
+| [B. トラブルシューティング](appendix/troubleshooting.md) | 執筆中 |
+| [C. 次の一歩](appendix/next-steps.md) | 完成 |
 
 ## 進め方 {#how-to-proceed}
 
