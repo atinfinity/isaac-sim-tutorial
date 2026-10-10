@@ -24,7 +24,7 @@
 
 ## コマンド
 
-- Python の依存は uv で管理する (`pyproject.toml` の dependency-groups: `docs` = zensical、`dev` = ruff)。pip や venv は直接使わない
+- Python の依存は uv で管理する (`pyproject.toml` の dependency-groups: `docs` = zensical、`dev` = ruff, usd-core)。pip や venv は直接使わない
 - 依存の同期: `uv sync`
 - サイトのプレビュー: `uv run zensical serve`
 - Lint: `uv run ruff check .` / `uv run ruff format --check .`
