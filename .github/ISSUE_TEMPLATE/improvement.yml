@@ -1,0 +1,16 @@
+name: 改善の提案
+description: わかりにくい説明、追加してほしい内容などを提案する
+labels: ["enhancement"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: 該当するページ
+      description: 特定のページに関する提案であれば、その URL
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 提案の内容
+      description: どこがわかりにくかったか、何があるとよいか
+    validations:
+      required: true

@@ -29,4 +29,4 @@ uv run zensical serve
 - 本文 (`docs/`): [CC BY 4.0](LICENSE-docs)
 - コード (`examples/`, `docker/` など): [Apache License 2.0](LICENSE)
 
-誤りの報告や改善提案は Issue へお願いします。Pull Request も歓迎します。
+誤りの報告や改善提案は Issue へお願いします。Pull Request も歓迎します。詳しくは [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。

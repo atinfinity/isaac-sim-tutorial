@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Isaac Sim 自体についての質問 (NVIDIA Developer Forums)
+    url: https://forums.developer.nvidia.com/c/omniverse/simulation/69
+    about: Isaac Sim 本体の不具合や、このチュートリアルの範囲外の質問はこちら
