@@ -26,18 +26,18 @@
 
 ## 画面構成 {#layout}
 
-<!-- 要確認: 6.1.0 の既定のレイアウトでのパネルの位置。スクリーンショット (docs/assets/02-gui-basics/layout.webp) に番号を振って対応させる -->
-
 起動直後の画面は、おおまかに次の部分からできています。
+
+![Isaac Sim 6.1.0 の既定のレイアウト](assets/02-gui-basics/layout.webp)
 
 | 場所 | 名前 | 役割 |
 | --- | --- | --- |
-| 上端 | メニューバー | `File` / `Edit` / `Create` / `Window` などのメニュー |
+| 上端 | メニューバー | `File` / `Edit` / `Create` / `Window` / `Tools` / `Utilities` / `Layouts` / `Help` のメニュー |
 | 中央 | Viewport (ビューポート) | シーンを 3D で表示する。物体の選択や移動もここで行う |
-| 左端 | ツールバー | 選択・移動・回転・拡大縮小の切り替えと、再生 (▶)・停止 (■) のボタン |
-| 右上 | Stage (ステージ) | シーンに含まれる物体を、親子関係のあるツリーで表示する |
+| 左端 | ツールバー | 上から選択・移動・回転・拡大縮小・スナップの切り替えと、再生 (▶) のボタン |
+| 右上 | Stage (ステージ) | シーンに含まれる物体を、親子関係のあるツリーで表示する。`Layer` / `Render Settings` / `Robot Inspector` のタブと切り替えられる |
 | 右下 | Property (プロパティ) | Stage や Viewport で選んだ物体の位置・大きさ・物理などの設定 |
-| 下段 | Content / Console など | Content はアセット (USD ファイル) のブラウザ、Console はログ |
+| 下段 | Console / Content | Content はアセット (USD ファイル) のブラウザ、Console はログ |
 
 Stage のツリーに並んでいる 1 つ 1 つの項目は **Prim** と呼ばれます。Prim や Stage が何なのかは 3 章で詳しく扱うので、ここでは「シーンに置いた物体の一覧」と考えておけば十分です。
 
@@ -57,20 +57,27 @@ Stage のツリーに並んでいる 1 つ 1 つの項目は **Prim** と呼ば�
 
 !!! tip "キー操作が効かないとき"
     Web ビューアでは、キー操作はブラウザに表示された映像にフォーカスがあるときだけ Isaac Sim に届きます。キーが効かないときは、一度ビューポートをクリックしてから押してください。
-    <!-- 要確認: Web ビューアでのキー入力 (Alt+ドラッグ、F、Space、W/E/R) が Isaac Sim に届くか。ブラウザのショートカットと衝突しないか -->
+    <!-- 要確認: Web ビューアで Alt+ドラッグ (回転) が効くか。F、Space、W/E/R は効くことを確認済み -->
 
 ## 物体を配置する {#place-objects}
 
-まず、新しいシーンを作り、地面・照明・立方体を置きます。
+まず、新しいシーンを作り、地面と立方体を置きます。
 
 1. `File > New` で新しいシーンを作る
 2. `Create > Physics > Ground Plane` で地面を置く
-3. `Create > Lights > Distant Light` で平行光源 (太陽光のような光) を置く
-4. `Create > Shape > Cube` で立方体を置く
+3. `Create > Shape > Cube` で立方体を置く
 
-<!-- 要確認: 1〜4 の各操作の結果。New 直後に既定の光源があるか、Stage に作られる Prim のパス (/World/GroundPlane, /World/DistantLight? /World/Cube) -->
+`File > New` の時点でシーンに未保存の変更があると、`Would you like to save this stage?` (保存しますか?) と聞かれます。ここでは保存しなくてよいので `Don't Save` を選びます。
 
-置いた立方体は、地面に半分埋まった状態で原点に置かれます。<!-- 要確認: Cube の初期位置と大きさ -->
+新しいシーンには、最初から `World` と、平行光源 (太陽光のような光) の `Environment/defaultLight` があります。そのため照明は自分で置かなくても大丈夫です。操作が終わると、Stage には次の Prim が並びます。
+
+| Prim のパス | 内容 |
+| --- | --- |
+| `/World/GroundPlane` | 地面 |
+| `/World/Cube` | 立方体 |
+| `/Environment/defaultLight` | 平行光源 (最初からある) |
+
+置いた立方体は 1 辺 1 m で、中心が原点 (0, 0, 0) にあります。そのため、地面に半分埋まった状態になります。
 
 ### 移動・回転・拡大縮小 {#gizmo}
 
@@ -85,13 +92,13 @@ Stage のツリーに並んでいる 1 つ 1 つの項目は **Prim** と呼ば�
 
 矢印の色は軸に対応していて、赤が X、緑が Y、青が Z です。Isaac Sim では **Z 軸が上** なので、青い矢印を上にドラッグすると立方体が持ち上がります (座標系については 3 章の [座標系と単位](03-usd-basics.md#coordinate-systems) で詳しく扱います)。
 
-ギズモで立方体を地面から 1 m ほど持ち上げておきましょう。正確な値にしたいときは、Property パネルの `Transform` にある `Translate` に数値を入力します。ここでは Z を `1.0` にします。
+ギズモで立方体を地面から 1 m ほど持ち上げておきましょう。正確な値にしたいときは、Property パネルの `Transform` にある `Translate` に数値を入力します。ここでは Z を `1.0` にします。入力したら、欄の外をクリックすると確定します。
 
-<!-- 要確認: Property パネルの Transform セクションの名前と、Translate の入力欄。単位が m で表示されるか -->
+`Transform` には `Translate` (位置)・`Orient` (向き)・`Scale` (拡大率) が並んでいます。欄に単位は表示されませんが、位置の単位は m です。
 
 ## 物理を設定する (重力・コリジョン) {#physics}
 
-この状態で左端の再生ボタン (▶) を押しても、立方体は空中に浮いたまま動きません。`Create > Shape` で作った物体は見た目だけの物体で、物理の設定を持っていないからです。確認したら停止ボタン (■) を押しておきます。
+この状態で左端の再生ボタン (▶) を押しても、立方体は空中に浮いたまま動きません。`Create > Shape` で作った物体は見た目だけの物体で、物理の設定を持っていないからです。再生中は ▶ ボタンが一時停止 (❚❚) と停止 (■) のボタンに変わるので、確認したら停止 (■) を押しておきます。
 
 物体が物理シミュレーションに参加するには、主に次の 2 つの設定が必要です。
 
@@ -106,18 +113,18 @@ Stage のツリーに並んでいる 1 つ 1 つの項目は **Prim** と呼ば�
 2. Property パネルの `Add` ボタンを押し、`Physics > Rigid Body with Colliders Preset` を選ぶ
 3. 再生 (▶) する
 
-立方体が落下し、地面で止まれば成功です。止めるときは停止 (■) を押します。停止すると、立方体は再生前の位置に戻ります。
+`Add` ボタンは Property パネルの左上、Prim の名前の左にあります。適用すると、Property パネルに `Physics` のセクションが増え、その中に `Rigid Body` と `Collider` などの設定が並びます。
 
-<!-- 要確認: Add ボタンの位置とメニュー階層。適用後に Property パネルに Rigid Body / Collider のセクションが増えること。停止で元の位置に戻ること -->
+立方体が落下し、地面で止まれば成功です。止めるときは停止 (■) を押します。停止すると、立方体は再生前の位置 (Z = 1.0) に戻ります。
 
 !!! tip "地面に Collider は要らないのか"
     `Create > Physics > Ground Plane` で作った地面には、最初から Collider が付いています。そのため立方体は地面をすり抜けずに止まります。
 
 ### 重力の設定 {#gravity}
 
-重力などシーン全体の物理の設定は、**Physics Scene** という Prim が持っています。Stage で `physicsScene` を選ぶと、Property パネルに重力の向き (`Gravity Direction`) と大きさ (`Gravity Magnitude`) が表示されます。既定では -Z 方向 (下向き) に 9.81 m/s² です。
+重力などシーン全体の物理の設定は、**Physics Scene** という Prim が持っています。Physics Scene がないシーンで最初に再生すると、`/PhysicsScene` が自動で作られます。Stage で `PhysicsScene` を選ぶと、Property パネルの `Physics > Scene` に重力の向き (`Gravity Direction`) と大きさ (`Gravity Magnitude`) が表示されます。既定では向きが (0, 0, -1)、つまり下向きで、大きさは 9.81 m/s² です。
 
-<!-- 要確認: Ground Plane を置いたときに Physics Scene が自動で作られるか、Prim の名前 (/physicsScene?)、Property の項目名。無ければ Create > Physics > Physics Scene で作る手順にする -->
+再生する前に重力を変えたいときは、`Create > Physics > Physics Scene` で自分で作ることもできます。
 
 ## Jetbot を置く {#jetbot}
 
@@ -125,10 +132,13 @@ Stage のツリーに並んでいる 1 つ 1 つの項目は **Prim** と呼ば�
 
 1. `File > New` で新しいシーンを作り、`Create > Physics > Ground Plane` で地面を置く
 2. `Create > Robots > Asset Browser` を選ぶ。下段の **Content** タブが開き、NVIDIA が公開しているアセットの `Isaac/Robots` フォルダが表示される
-3. 1 つ上の `Isaac` フォルダに戻り、`Robots_Multiphysics > NVIDIA > Jetbot` を開く
+3. Content タブの左のツリーで、`Isaac Sim` の下の `Robots_Multiphysics` を展開し、`NVIDIA > Jetbot` を選ぶ
 4. `jetbot.usda` をビューポートにドラッグ&ドロップする
 
-<!-- 要確認: Content タブで 1 つ上のフォルダに戻る方法 (パス欄の編集 or フォルダツリー)。ドロップ後の Prim のパス (/World/jetbot?) と置かれる位置 -->
+<!-- 要確認: ドロップ後の Prim のパス (/World/jetbot?) と置かれる位置 -->
+
+!!! tip "フォルダの中身が表示されないとき"
+    ツリーでフォルダを選んでも、右側の一覧が前のフォルダのままになることがあります。その場合は、一覧の右下にあるボタンで表示をリスト形式に切り替えると、中身が表示されます。
 
 アセットは初回だけインターネットからダウンロードするので、表示されるまで少し時間がかかります。
 
@@ -174,10 +184,10 @@ Jetbot が前に進めば成功です。`Target Velocity` の単位は **度/秒
 | 操作 | ボタン | キー | 動き |
 | --- | --- | --- | --- |
 | 再生 | ▶ | ++space++ | 物理シミュレーションを進める |
-| 一時停止 | ❚❚ (再生中の ▶ ボタン) | ++space++ | その時点で止める。もう一度押すと続きから再生する |
-| 停止 | ■ | - | シミュレーションを止め、物体を再生前の状態に戻す |
+| 一時停止 | ❚❚ (再生中に ▶ の位置に出る) | ++space++ | その時点で止める。もう一度押すと続きから再生する |
+| 停止 | ■ (再生中・一時停止中に出る) | - | シミュレーションを止め、物体を再生前の状態に戻す |
 
-<!-- 要確認: ツールバーのボタンの見た目と位置。Space で再生/一時停止が切り替わるか -->
+ボタンはどれも左端のツールバーの一番下にあります。
 
 !!! warning "停止すると再生中の変化は消える"
     停止 (■) すると、再生中に物体が動いた結果は破棄され、再生前の状態に戻ります。再生中に Property パネルで値を変えた場合も、停止すると元に戻ります。設定を変えるときは、停止した状態で変えてください。<!-- 要確認: 再生中の Property 変更が停止で戻るか -->
@@ -214,7 +224,7 @@ Jetbot が前に進めば成功です。`Target Velocity` の単位は **度/秒
 
 ## 演習 {#exercises}
 
-1. 立方体に `Rigid Body with Colliders Preset` ではなく、Rigid Body だけを付けて再生してみましょう。どうなるでしょうか。予想してから確かめてください。<!-- 要確認: Add > Physics の中の Rigid Body 単体の項目名 -->
+1. 立方体に `Rigid Body with Colliders Preset` ではなく、`Add > Physics > Rigid Body` で Rigid Body だけを付けて再生してみましょう。どうなるでしょうか。予想してから確かめてください。
 2. Physics Scene の重力の大きさを `1.62` (月面の重力) にして、立方体の落ち方を比べてみましょう。
 3. Jetbot の左右のホイールの `Target Velocity` を、`360` と `-360` にして再生してみましょう。Jetbot はどのように動くでしょうか。
 4. Jetbot の前に立方体 (Rigid Body with Colliders Preset 付き) を置き、Jetbot で押してみましょう。
