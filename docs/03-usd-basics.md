@@ -40,9 +40,13 @@ USD のファイルには主に次の拡張子があります。
     === "コンテナ内"
 
         ```bash
+        export PYTHONPATH=$(ls -d /isaac-sim/extscache/omni.usd.libs-*)
+        export LD_LIBRARY_PATH=$PYTHONPATH/bin
         cd /tmp
         /isaac-sim/python.sh /workspace/examples/03_usd_basics/01_hello_stage.py
         ```
+
+        Isaac Sim の USD ライブラリ (`pxr`) は拡張機能 `omni.usd.libs` に含まれていて、そのままでは `python.sh` から import できません (`ModuleNotFoundError: No module named 'pxr'`)。最初の 2 行で、その場所を Python に教えています。4 章以降のように `SimulationApp` を起動するスクリプトでは、この設定は要りません。
 
         `examples/` は読み取り専用でマウントしているので、出力先を書き込み可能な `/tmp` にしています。
 

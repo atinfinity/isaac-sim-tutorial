@@ -56,10 +56,13 @@ ROS 2 や強化学習の知識は必要ありません。
 
 | 項目 | 内容 |
 | --- | --- |
-| OS | Ubuntu 24.04 |
+| OS | Ubuntu 24.04.3 LTS |
+| CPU | Intel Core i7-9800X (8 コア / 16 スレッド) |
+| メモリ | 32GB |
 | GPU | NVIDIA GeForce RTX 2080 Ti (VRAM 11GB) |
-| NVIDIA ドライバ | TODO |
-| メモリ | TODO |
+| NVIDIA ドライバ | 595.99.02 |
+| Docker | 28.3.3 (Compose v2.39.1) |
+| NVIDIA Container Toolkit | 1.17.8 |
 | Isaac Sim | 6.1.0 (`nvcr.io/nvidia/isaac-sim:6.1.0`) |
 
 !!! warning "検証環境は公式の推奨要件を満たしていません"
