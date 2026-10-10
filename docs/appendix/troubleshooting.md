@@ -120,6 +120,10 @@ Isaac Sim の画面は表示されるのに、上端のメニューバー (`File
 
 ブラウザを全画面表示にすると、メニューが見えるようになります。
 
+### キー操作が効かない {#key-input}
+
+Web ビューアでは、キー操作はブラウザに表示された映像にフォーカスがあるときだけ Isaac Sim に届きます。++f++ や ++space++ などが効かないときは、一度ビューポートをクリックしてから押してください (2 章の [ビューポートの操作](../02-gui-basics.md#viewport-navigation) も参照)。
+
 ### 別の PC のブラウザから接続できない {#remote-access}
 
 TODO: 手順の確認
@@ -139,6 +143,19 @@ TODO
 検証環境では、同じ LAN 内の別の PC から接続して、ビューポートの操作やシミュレーションの再生でカクつきや遅延は感じませんでした。
 
 ## 実行時 {#runtime}
+
+### 画面の下端に黄色い警告が出る {#status-bar-warnings}
+
+GUI を操作していると、画面の下端 (ステータスバー) に黄色い警告が表示されることがあります。検証環境では次の警告が出ましたが、どれも操作やシミュレーションには影響しませんでした。
+
+| 警告 | 出たとき |
+| --- | --- |
+| `Failed to startup plugin carb.windowing-glfw.plugin ...` | 再生を止めたとき。ヘッドレスで動かしているために出る |
+| `Encountered USD Warnings but USD Diagnostics are muted. ...` | Jetbot をドラッグ&ドロップで配置したとき |
+| `Warning: attribute isaac:actuator not found for path /World/jetbot/chassis/left_wheel_joint` | Stage でホイールの関節を選んだとき |
+| `Unexpected reference count of 2 for UsdStage ...` | `File > Save As...` で保存したとき |
+
+警告が出たあとに期待どおりに動かないときは、下段の **Console** タブにエラーが出ていないかを確認してください。
 
 ### Create メニューに Jetbot がない {#jetbot-not-in-menu}
 
@@ -177,6 +194,23 @@ TODO: メモリ不足時のエラーメッセージ
 ### サンプルコードでエラーが出る {#example-errors}
 
 TODO: よくある原因 (Isaac Sim のバージョン違い、`python.sh` 以外の Python で実行している など)
+
+#### `No module named 'pxr'` {#no-module-pxr}
+
+3 章のサンプルのように `SimulationApp` を起動せずに USD を扱うスクリプトを、コンテナの `python.sh` でそのまま実行すると、次のエラーになります。
+
+```text
+ModuleNotFoundError: No module named 'pxr'
+```
+
+Isaac Sim の USD ライブラリ (`pxr`) は拡張機能 `omni.usd.libs` に含まれていて、そのままでは `python.sh` から import できないためです。3 章の [USD の基礎](../03-usd-basics.md) の手順のとおり、実行前に `PYTHONPATH` と `LD_LIBRARY_PATH` を設定してください。
+
+```bash
+export PYTHONPATH=$(ls -d /isaac-sim/extscache/omni.usd.libs-*)
+export LD_LIBRARY_PATH=$PYTHONPATH/bin
+```
+
+4 章以降のように `SimulationApp` を起動するスクリプトでは、この設定は要りません。
 
 ## 参考リンク {#references}
 
