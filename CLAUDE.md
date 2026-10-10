@@ -7,7 +7,7 @@
 - **対象バージョン**: Isaac Sim 6.1.0 に固定する。API は `isaacsim.core.experimental` 系を使い、公式の standalone_examples (タグ `v6.1.0`) を正とする
 - **題材**: 全章を通して Jetbot を使う。6 章で LiDAR を後付けし、7 章では LiDAR による障害物回避を扱う
 - **実行環境**: Docker (`docker/compose.yml`) を使い、画面は Web ビューア (`:8210`) で見る。WebRTC Streaming Client は代替手段として扱い、X11 は扱わない
-- **検証環境**: Ubuntu 24.04 + RTX 2080 Ti。公式要件 (RTX 4080 / 16GB) 未満なので、本文にその旨を明記する
+- **検証環境**: Ubuntu 24.04 + RTX 2080 Ti (NVIDIA ドライバ 595.99.02)。公式要件 (RTX 4080 / 16GB) 未満なので、本文にその旨を明記する
 - **公開**: 0〜4 章が揃ったら GitHub Pages を有効化し、リポジトリ変数 `DEPLOY_PAGES=true` を設定する
 
 ## 執筆ルール
