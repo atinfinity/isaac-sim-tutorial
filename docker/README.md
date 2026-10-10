@@ -43,7 +43,13 @@ docker compose -f docker/compose.yml up -d
 docker compose -f docker/compose.yml ps   # 両方 healthy になるまで待つ
 ```
 
-Chromium 系のブラウザで `http://localhost:8210` を開き、Isaac Sim の画面が表示されることを確認します。続けて `Create > Robots` などから Jetbot を配置し、再生 (▶) できるかを確認します。
+Chromium 系のブラウザで `http://localhost:8210` を開き、Isaac Sim の画面が表示されることを確認します。上端のメニューバーが見えない場合は、ブラウザを全画面表示にします。
+
+続けて、Jetbot を配置して再生できるかを確認します。Jetbot は `Create > Robots` の一覧にはないため、Asset Browser から配置します。
+
+1. `Create > Robots > Asset Browser` を開く (`/Isaac/Robots` が開く)
+2. `NVIDIA > Jetbot` の `jetbot.usd` をビューポートにドラッグ&ドロップする
+3. 再生 (▶) する
 
 停止するには次を実行します。
 
