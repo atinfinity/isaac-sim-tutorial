@@ -63,9 +63,29 @@ sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub
 
 ### サンプルの出力ファイルを保存できない {#output-permission}
 
-TODO: 実際のエラーメッセージ
+6 章・7 章のサンプルは、ホストのディレクトリをマウントして画像を保存します。保存先のディレクトリを uid 1234 が書き込めないと、次のようなエラーが出ます。
 
-6 章・7 章のサンプルは、ホストのディレクトリをマウントして画像を保存します。保存先も uid 1234 が書き込める必要があります。
+```text
+[Error] [omni.kit.app._impl] [py stderr]: PermissionError: [Errno 13] Permission denied: '/tmp/output/06_camera'
+```
+
+!!! warning
+    このエラーが出ても、スクリプトの終了コードは 0 (成功) になります。画像ができていないときは、ログに `PermissionError` がないかを確認してください。
+
+コンテナ内の Isaac Sim は uid 1234 のユーザーで動きます。マウントするディレクトリの所有者を uid 1234 に変えてください。
+
+```bash
+sudo chown 1234:1234 output
+```
+
+`sudo` を使えない場合は、1 章で作った `~/docker/isaac-sim/data` (すでに uid 1234 の所有) に保存する方法もあります。このディレクトリはコンテナの `/isaac-sim/.local/share/ov/data` にマウントされているので、`--output` で保存先を指定します。
+
+```bash
+docker compose -f docker/compose.yml run --rm --no-deps --entrypoint /isaac-sim/python.sh isaac-sim \
+  /workspace/examples/06_sensors/01_camera.py --output /isaac-sim/.local/share/ov/data/output/06_camera
+```
+
+画像はホストの `~/docker/isaac-sim/data/output/06_camera/` にできます (所有者は uid 1234 なので、ホストのユーザーは読めますが書き換えられません)。
 
 ### 互換性チェックの結果の読み方 {#compatibility-check}
 
