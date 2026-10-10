@@ -17,10 +17,11 @@ Docker で始める NVIDIA Isaac Sim 初学者向けチュートリアル (日�
 
 ## サイトをローカルでプレビューする
 
+[uv](https://docs.astral.sh/uv/) を使います。
+
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install zensical
-.venv/bin/zensical serve
+uv sync
+uv run zensical serve
 ```
 
 ## ライセンス

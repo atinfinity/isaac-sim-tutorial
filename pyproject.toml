@@ -1,0 +1,15 @@
+[project]
+name = "isaac-sim-tutorial"
+version = "0.1.0"
+description = "Docker で始める NVIDIA Isaac Sim 初学者向けチュートリアル"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+docs = ["zensical"]
+dev = ["ruff"]
+
+[tool.uv]
+package = false
+default-groups = ["docs", "dev"]

@@ -24,6 +24,8 @@
 
 ## コマンド
 
-- サイトのプレビュー: `.venv/bin/zensical serve`
-- Lint: `ruff check .`
+- Python の依存は uv で管理する (`pyproject.toml` の dependency-groups: `docs` = zensical、`dev` = ruff)。pip や venv は直接使わない
+- 依存の同期: `uv sync`
+- サイトのプレビュー: `uv run zensical serve`
+- Lint: `uv run ruff check .` / `uv run ruff format --check .`
 - CI はサイトのビルドと ruff のみ (GPU がないため、サンプルコードの実行確認は手動で行う)
