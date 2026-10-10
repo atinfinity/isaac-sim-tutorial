@@ -22,13 +22,34 @@ docker compose -f docker/compose.yml logs isaac-sim | tail -50   # Isaac Sim の
 
 ## 環境構築 {#setup}
 
-### コンテナが起動しない {#container-not-starting}
+### `driver/library version mismatch` でコンテナが起動しない {#driver-mismatch}
+
+`docker compose run` や `docker compose up` で、次のようなエラーが出てコンテナが起動しないことがあります。
+
+```text
+nvidia-container-cli: initialization error: nvml error: driver/library version mismatch: unknown
+```
+
+このとき、ホストの `nvidia-smi` も `Failed to initialize NVML: Driver/library version mismatch` で失敗します。
+
+NVIDIA ドライバを更新したあと、PC を再起動していないのが原因です。ドライバのライブラリは新しいバージョンに置き換わっていますが、動いているカーネルモジュールは古いままなので、両者のバージョンが合いません。PC を再起動してください。
+
+```bash
+cat /proc/driver/nvidia/version   # 動いているカーネルモジュールのバージョン
+```
+
+再起動後に `nvidia-smi` が正常に表示されれば解決です。
+
+### その他の理由でコンテナが起動しない {#container-not-starting}
 
 TODO: 症状・原因・対処
 
 - NVIDIA Container Toolkit が入っていない、または Docker に設定されていない (`runtime: nvidia` が使えない)
 - NVIDIA ドライバのバージョンが古い
 - イメージの取得 (`docker pull`) に失敗している
+
+!!! tip
+    `nvcr.io/nvidia/isaac-sim:6.1.0` の取得に NGC へのログイン (`docker login nvcr.io`) は必要ありません。
 
 ### キャッシュ用ディレクトリの権限エラー {#permission-denied}
 
@@ -46,9 +67,22 @@ TODO: 実際のエラーメッセージ
 
 6 章・7 章のサンプルは、ホストのディレクトリをマウントして画像を保存します。保存先も uid 1234 が書き込める必要があります。
 
-### 互換性チェックで警告が出る {#compatibility-check}
+### 互換性チェックの結果の読み方 {#compatibility-check}
 
-TODO: 検証環境 (RTX 2080 Ti) での出力と、無視してよい警告の説明
+1 章の互換性チェック (`isaac-sim.compatibility_check.sh`) は、最後に `System checking result: PASSED` と表示されれば問題ありません。検証環境 (RTX 2080 Ti / VRAM 11GB / RAM 32GB) では次のように表示されました。
+
+| 項目 | 表示 | 意味 |
+| --- | --- | --- |
+| GPU 0: VRAM | `enough (more is recommended)` | 最低要件 (10GB) は満たすが、推奨には届かない |
+| RAM | `enough (more is recommended)` | 最低要件 (32GB) は満たすが、推奨には届かない |
+| Display | `no display was detected` | ヘッドレスで動かしているため。Web ビューアで表示するので問題ない |
+
+途中で次のような警告が出ますが、ヘッドレスで動かすときに出るもので、動作には影響しませんでした。
+
+- `OmniHub: ... Hub encountered error. Trying to reconnect to Hub.` (数十回繰り返す)
+- `GLFW initialization failed.` / `Failed to startup plugin carb.windowing-glfw.plugin`
+- `failed to open the default display.`
+- `IOMMU is enabled.`
 
 ## Web ビューア {#web-viewer}
 
@@ -59,6 +93,12 @@ TODO: 症状・原因・対処
 - Isaac Sim の起動が終わっていない (`docker compose ps` で healthy になるまで待つ)
 - Chromium 系以外のブラウザを使っている
 - 別の PC から接続しているのに `ISAACSIM_HOST` を設定していない
+
+### メニューが見えない (画面の上端が切れる) {#menu-hidden}
+
+Isaac Sim の画面は表示されるのに、上端のメニューバー (`File`・`Edit`・`Create` など) が見えないことがあります。ブラウザのウィンドウが小さく、画面の上端が切れているのが原因です。
+
+ブラウザを全画面表示にすると、メニューが見えるようになります。
 
 ### 別の PC のブラウザから接続できない {#remote-access}
 
@@ -76,13 +116,27 @@ docker compose -f docker/compose.yml up -d --build
 
 TODO
 
+検証環境では、同じ LAN 内の別の PC から接続して、ビューポートの操作やシミュレーションの再生でカクつきや遅延は感じませんでした。
+
 ## 実行時 {#runtime}
+
+### Create メニューに Jetbot がない {#jetbot-not-in-menu}
+
+`Create > Robots` に直接並んでいるのは、Ant・Spot・Franka・Humanoid・Nova Carter・Quadcopter だけです。Jetbot は `Create > Robots > Asset Browser` から開くフォルダの `NVIDIA > Jetbot` にある `jetbot.usd` を、ビューポートにドラッグ&ドロップして配置します。
 
 ### 起動が遅い {#slow-startup}
 
-TODO: 検証環境での初回と 2 回目の起動時間
-
 初回の起動では、シェーダーのコンパイルとアセットのダウンロードが行われるため時間がかかります。キャッシュ用ディレクトリをマウントしていれば、2 回目以降は速くなります。
+
+検証環境 (RTX 2080 Ti / Core i7-9800X) での所要時間は次のとおりでした。
+
+| 処理 | 初回 | 2 回目 |
+| --- | --- | --- |
+| イメージの取得 (`docker pull`、21.1GB) | 約 17 分 | - |
+| スモークテスト (ヘッドレスで Python スクリプトを実行) | 約 4.5 分 | 約 1 分 |
+| `docker compose up` で healthy になるまで | 約 4.5 分 (Web ビューアのビルドを含む) | 約 1.5 分 |
+
+起動直後は CPU 使用率が高い状態 (16 論理コアのうち 13 コア分ほど) がしばらく続きます。
 
 ### アセットの読み込みが終わらない {#asset-loading}
 
@@ -90,7 +144,15 @@ TODO
 
 ### GPU のメモリが足りない {#out-of-memory}
 
-TODO: 検証環境での VRAM 使用量と、メモリ不足時のエラーメッセージ
+TODO: メモリ不足時のエラーメッセージ
+
+検証環境 (RTX 2080 Ti / VRAM 11GB) で Web ビューアから GUI を使ったときの使用量は次のとおりでした。Jetbot 1 台程度のシーンであれば、VRAM 11GB でも十分に余裕があります。
+
+| 状態 | VRAM | RAM (isaac-sim コンテナ) |
+| --- | --- | --- |
+| 起動直後 (空のシーン) | 約 0.8GB | 約 9.6GB |
+| Jetbot を配置 | 約 1.9GB | 約 12.6GB |
+| Jetbot を配置して再生中 | 約 2.1GB | 約 12.7GB |
 
 ### サンプルコードでエラーが出る {#example-errors}
 
