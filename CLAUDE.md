@@ -20,11 +20,12 @@
 - UI のメニュー名は英語のまま書く。必要に応じて和訳を添える (例: `Create > Mesh > Cube`)
 - 画像は WebP で `docs/assets/<章のファイル名>/` に置く。動きを見せたいときは数秒の MP4 か GIF を使い、1 ファイル 5MB 以下に収める
 - サンプルコードは `examples/<章番号>_<名前>/` に置く
+- ページ内リンクの対象にする見出しには `{#英字の-id}` を付ける (日本語の見出しは自動の ID が `_1` のようになるため)
 - GUI の操作手順とスクリーンショットは、実機で検証したものだけを載せる
 
 ## コマンド
 
-- Python の依存は uv で管理する (`pyproject.toml` の dependency-groups: `docs` = zensical、`dev` = ruff)。pip や venv は直接使わない
+- Python の依存は uv で管理する (`pyproject.toml` の dependency-groups: `docs` = zensical、`dev` = ruff, usd-core)。pip や venv は直接使わない
 - 依存の同期: `uv sync`
 - サイトのプレビュー: `uv run zensical serve`
 - Lint: `uv run ruff check .` / `uv run ruff format --check .`
