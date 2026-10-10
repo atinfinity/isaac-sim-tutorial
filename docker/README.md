@@ -47,8 +47,8 @@ Chromium 系のブラウザで `http://localhost:8210` を開き、Isaac Sim の
 
 続けて、Jetbot を配置して再生できるかを確認します。Jetbot は `Create > Robots` の一覧にはないため、Asset Browser から配置します。
 
-1. `Create > Robots > Asset Browser` を開く (`/Isaac/Robots` が開く)
-2. `NVIDIA > Jetbot` の `jetbot.usd` をビューポートにドラッグ&ドロップする
+1. `Create > Robots > Asset Browser` を開く (Content タブで `/Isaac/Robots` が開く)
+2. 左のツリーで `Isaac Sim` の下の `Robots_Multiphysics` を展開し、`NVIDIA > Jetbot` の `jetbot.usda` をビューポートにドラッグ&ドロップする
 3. 再生 (▶) する
 
 停止するには次を実行します。
