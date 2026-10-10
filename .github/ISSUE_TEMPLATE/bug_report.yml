@@ -1,0 +1,51 @@
+name: 誤り・動かない手順の報告
+description: 本文の誤り、サンプルコードのエラー、手順どおりに進めても動かない箇所を報告する
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        報告ありがとうございます。わかる範囲で記入してください。
+  - type: input
+    id: page
+    attributes:
+      label: 該当するページまたはファイル
+      description: ページの URL、またはリポジトリ内のパス
+      placeholder: "例: https://atinfinity.github.io/isaac-sim-tutorial/05-robot-control/ / examples/05_robot_control/02_drive_jetbot.py"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 内容
+      description: 何が誤っているか、何が起きたか
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 実行したコマンドや操作
+      description: 動かない手順の報告の場合に記入してください
+      render: bash
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待した結果
+  - type: textarea
+    id: logs
+    attributes:
+      label: エラーメッセージやログ
+      description: 長い場合は該当部分の前後だけで構いません
+      render: text
+  - type: textarea
+    id: environment
+    attributes:
+      label: 実行環境
+      description: 動かない手順の報告の場合に記入してください
+      value: |
+        - OS:
+        - GPU:
+        - NVIDIA ドライバのバージョン (`nvidia-smi`):
+        - Docker のバージョン:
+        - Isaac Sim のバージョン: 6.1.0
+        - ブラウザ (Web ビューアの場合):
