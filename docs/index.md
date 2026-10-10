@@ -32,7 +32,7 @@ ROS 2 との連携や Isaac Lab による強化学習は扱いません。これ
 | 章 | 内容 | 状態 |
 | --- | --- | --- |
 | [0. はじめに](00-introduction.md) | 対象読者・ゴール・全体の流れと Isaac Sim の概要 | 完成 |
-| [1. 環境構築](01-setup.md) | Docker で Isaac Sim を起動し、ブラウザで画面を表示する | 執筆中 |
+| [1. 環境構築](01-setup.md) | Docker で Isaac Sim を起動し、ブラウザで画面を表示する | 完成 |
 | [2. GUI の基本](02-gui-basics.md) | 画面構成を理解し、物体を置いて物理シミュレーションを動かす | 完成 |
 | [3. USD の基礎](03-usd-basics.md) | シーンを表すデータ形式 USD の基本概念 | 完成 |
 | [4. Python スタンドアロン入門](04-python-standalone.md) | Python スクリプトからシーンを作り、シミュレーションを動かす | 執筆中 |
