@@ -2,7 +2,7 @@
 
 Docker で始める NVIDIA Isaac Sim 初学者向けチュートリアル (日本語) です。
 
-- **サイト**: https://atinfinity.github.io/isaac-sim-tutorial/ (公開準備中)
+- **サイト**: https://atinfinity.github.io/isaac-sim-tutorial/ (執筆中。書き終えた章から公開しています)
 - **対象**: Isaac Sim 6.1.0 / Ubuntu + NVIDIA RTX GPU + Docker
 
 ## リポジトリ構成
@@ -29,4 +29,4 @@ uv run zensical serve
 - 本文 (`docs/`): [CC BY 4.0](LICENSE-docs)
 - コード (`examples/`, `docker/` など): [Apache License 2.0](LICENSE)
 
-誤りの報告や改善提案は Issue へお願いします。Pull Request も歓迎します。
+誤りの報告や改善提案は Issue へお願いします。Pull Request も歓迎します。詳しくは [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
