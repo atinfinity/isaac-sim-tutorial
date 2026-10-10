@@ -1,0 +1,95 @@
+[project]
+site_name = "Isaac Sim 入門チュートリアル"
+site_description = "Docker で始める NVIDIA Isaac Sim 初学者向けチュートリアル"
+site_author = "atinfinity"
+site_url = "https://atinfinity.github.io/isaac-sim-tutorial/"
+copyright = "Copyright &copy; 2026 atinfinity — 本文: CC BY 4.0 / コード: Apache-2.0"
+repo_url = "https://github.com/atinfinity/isaac-sim-tutorial"
+repo_name = "atinfinity/isaac-sim-tutorial"
+edit_uri = "edit/main/docs/"
+
+nav = [
+  { "ホーム" = "index.md" },
+  { "0. はじめに" = "00-introduction.md" },
+  { "1. 環境構築" = "01-setup.md" },
+  { "2. GUI の基本" = "02-gui-basics.md" },
+  { "3. USD の基礎" = "03-usd-basics.md" },
+  { "4. Python スタンドアロン入門" = "04-python-standalone.md" },
+  { "5. ロボットを動かす" = "05-robot-control.md" },
+  { "6. センサ" = "06-sensors.md" },
+  { "7. ミニプロジェクト" = "07-mini-project.md" },
+  { "付録" = [
+    "appendix/cloud.md",
+    "appendix/troubleshooting.md",
+    "appendix/next-steps.md",
+  ] },
+]
+
+[project.theme]
+language = "ja"
+features = [
+  "announce.dismiss",
+  "content.action.edit",
+  "content.code.annotate",
+  "content.code.copy",
+  "content.code.select",
+  "content.footnote.tooltips",
+  "content.tabs.link",
+  "content.tooltips",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
+[project.markdown_extensions]
+abbr = {}
+admonition = {}
+attr_list = {}
+def_list = {}
+footnotes = {}
+md_in_html = {}
+toc.permalink = true
+pymdownx.arithmatex.generic = true
+pymdownx.betterem = {}
+pymdownx.caret = {}
+pymdownx.details = {}
+pymdownx.emoji.emoji_generator = "zensical.extensions.emoji.to_svg"
+pymdownx.emoji.emoji_index = "zensical.extensions.emoji.twemoji"
+pymdownx.highlight.anchor_linenums = true
+pymdownx.highlight.line_spans = "__span"
+pymdownx.highlight.pygments_lang_class = true
+pymdownx.inlinehilite = {}
+pymdownx.keys = {}
+pymdownx.magiclink = {}
+pymdownx.mark = {}
+pymdownx.smartsymbols = {}
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+pymdownx.tabbed.alternate_style = true
+pymdownx.tabbed.combine_header_slug = true
+pymdownx.tasklist.custom_checkbox = true
+pymdownx.tilde = {}

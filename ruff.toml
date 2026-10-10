@@ -1,0 +1,9 @@
+line-length = 100
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[lint.per-file-ignores]
+# Isaac Sim のモジュールは SimulationApp の起動後にしか import できない
+"examples/**/*.py" = ["E402"]
