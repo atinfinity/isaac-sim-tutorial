@@ -57,7 +57,6 @@ Stage のツリーに並んでいる 1 つ 1 つの項目は **Prim** と呼ば�
 
 !!! tip "キー操作が効かないとき"
     Web ビューアでは、キー操作はブラウザに表示された映像にフォーカスがあるときだけ Isaac Sim に届きます。キーが効かないときは、一度ビューポートをクリックしてから押してください。
-    <!-- 要確認: Web ビューアで Alt+ドラッグ (回転) が効くか。F、Space、W/E/R は効くことを確認済み -->
 
 ## 物体を配置する {#place-objects}
 
@@ -135,7 +134,7 @@ Stage のツリーに並んでいる 1 つ 1 つの項目は **Prim** と呼ば�
 3. Content タブの左のツリーで、`Isaac Sim` の下の `Robots_Multiphysics` を展開し、`NVIDIA > Jetbot` を選ぶ
 4. `jetbot.usda` をビューポートにドラッグ&ドロップする
 
-<!-- 要確認: ドロップ後の Prim のパス (/World/jetbot?) と置かれる位置 -->
+Jetbot はドロップした位置の地面の上に置かれ、Stage に `/World/jetbot` ができます。Property パネルの `Translate` には、ドロップした位置の X・Y が入ります (Z は 0)。
 
 !!! tip "フォルダの中身が表示されないとき"
     ツリーでフォルダを選んでも、右側の一覧が前のフォルダのままになることがあります。その場合は、一覧の右下にあるボタンで表示をリスト形式に切り替えると、中身が表示されます。
@@ -167,13 +166,15 @@ Stage のツリーに並んでいる 1 つ 1 つの項目は **Prim** と呼ば�
 ホイールの関節には、目標の回転速度に向かって回そうとする **ドライブ** が付いています。この目標速度を GUI から変えてみます。
 
 1. Stage で `chassis/left_wheel_joint` を選ぶ
-2. Property パネルの `Drive` (Angular) にある `Target Velocity` を `360` にする
+2. Property パネルを下にスクロールし、`Drive` セクションの `Angular` にある `Target Velocity` を `360` にする
 3. `chassis/right_wheel_joint` も同じように `360` にする
 4. 再生 (▶) する
 
-Jetbot が前に進めば成功です。`Target Velocity` の単位は **度/秒** なので、`360` はホイールが 1 秒に 1 回転する速さです。左右で値を変えると、Jetbot は曲がります。
+`Target Velocity` の欄はダブルクリックすると入力できます。入力したら、欄の外をクリックすると確定します。
 
-<!-- 要確認: Property パネルでの Drive セクションと Target Velocity の表示名。360 で前進するか (符号の向き)。再生中に値を変えても反映されるか -->
+Jetbot が前に進めば成功です。`Target Velocity` の単位は **度/秒** (欄にマウスを重ねると `Units: degrees / seconds` と表示されます) なので、`360` はホイールが 1 秒に 1 回転する速さです。
+
+`Target Velocity` は再生中に変えても、すぐに反映されます。再生したまま `left_wheel_joint` の値を `0` にすると、左のホイールが止まり、Jetbot は左に曲がっていきます。
 
 5 章では、この「左右のホイールの目標速度を決める」処理を Python から行い、Jetbot を思いどおりに走らせます。
 
@@ -185,12 +186,14 @@ Jetbot が前に進めば成功です。`Target Velocity` の単位は **度/秒
 | --- | --- | --- | --- |
 | 再生 | ▶ | ++space++ | 物理シミュレーションを進める |
 | 一時停止 | ❚❚ (再生中に ▶ の位置に出る) | ++space++ | その時点で止める。もう一度押すと続きから再生する |
-| 停止 | ■ (再生中・一時停止中に出る) | - | シミュレーションを止め、物体を再生前の状態に戻す |
+| 停止 | ■ (再生中・一時停止中に出る) | - | シミュレーションを止め、物体を再生前の位置に戻す |
 
 ボタンはどれも左端のツールバーの一番下にあります。
 
-!!! warning "停止すると再生中の変化は消える"
-    停止 (■) すると、再生中に物体が動いた結果は破棄され、再生前の状態に戻ります。再生中に Property パネルで値を変えた場合も、停止すると元に戻ります。設定を変えるときは、停止した状態で変えてください。<!-- 要確認: 再生中の Property 変更が停止で戻るか -->
+!!! warning "停止で戻るもの・戻らないもの"
+    停止 (■) すると、再生中に物体が動いた結果は破棄され、再生前の位置に戻ります。
+
+    ただし、再生中に Property パネルで変えた値は、停止しても元に戻りません。たとえば前の節で、再生中に `Target Velocity` を `0` にした場合は、停止後も `0` のままです。元の動きに戻したいときは、値を自分で戻してください。
 
 ## シーンを保存する {#save-scene}
 
@@ -200,15 +203,30 @@ Jetbot が前に進めば成功です。`Target Velocity` の単位は **度/秒
 | --- | --- |
 | `/isaac-sim/.local/share/ov/data` | `~/docker/isaac-sim/data` |
 
-1. `File > Save As...` を選ぶ
-2. 保存先のフォルダに `/isaac-sim/.local/share/ov/data` を指定し、ファイル名を `jetbot_scene.usda` にする
-3. `Save` を押す
+1. `File > Save As...` を選ぶ。`Save File As...` のダイアログが開く
+2. 左のツリーで `isaac-sim > .local > share > ov > data` を選ぶ (上のパス欄が `/isaac-sim/.local/share/ov/data/` になる)
+3. 右下のファイル形式の一覧で `*.usda` を選ぶ
+4. `File name` に `jetbot_scene` と入力し、`Save` を押す
 
-<!-- 要確認: Save As... のダイアログでパスを入力できるか、拡張子 .usda を選べるか。ホスト側に ~/docker/isaac-sim/data/jetbot_scene.usda ができること -->
+ファイル形式は次の 3 つから選べます。
+
+| 形式 | ダイアログの説明 | 内容 |
+| --- | --- | --- |
+| `*.usd` | Can be Binary or Ascii | バイナリとテキストのどちらにもなれる |
+| `*.usda` | Human-readable text format | テキスト形式 (人が読める) |
+| `*.usdc` | Binary format | バイナリ形式 |
 
 保存したファイルは、`File > Open` で開き直せます。ホストからは `~/docker/isaac-sim/data/jetbot_scene.usda` として見えるので、テキストエディタで中身を開いてみてください。拡張子を `.usda` にするとテキスト形式で保存されるので、人が読めます。
 
-ファイルの中では、Jetbot は本体を丸ごとコピーするのではなく、`jetbot.usda` の URL を **参照 (Reference)** する形で書かれています。この仕組みは 3 章で扱います。
+ファイルの中では、Jetbot は本体を丸ごとコピーするのではなく、`jetbot.usda` の URL を読み込む形で書かれています。
+
+```usda
+def "jetbot" (
+    prepend payload = @https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/NVIDIA/Jetbot/jetbot.usda@
+)
+```
+
+`payload` は、3 章で扱う **Reference** の仲間で、別のファイルの内容を取り込む仕組みです (読み込みを後回しにできる点が Reference と違います)。そのあとに、ホイールの `Target Velocity` のように GUI で変えた値だけが、差分として書かれています。
 
 !!! tip "保存したファイルの所有者"
     コンテナは UID 1234 のユーザーで動いているので、保存したファイルの所有者も UID 1234 になります。ホストで編集できないときは、付録 B の [出力ファイルを編集できない](appendix/troubleshooting.md#output-permission) を参照してください。
