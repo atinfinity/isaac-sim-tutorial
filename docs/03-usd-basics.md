@@ -373,7 +373,11 @@ def Xform "World"
 
     関数名のとおり、ここで行っているのは「Stage に Reference を追加すること」です。
 
-<!-- TODO(実機検証待ち): 生成した .usda を Isaac Sim の GUI で開き、Stage パネルとの対応を示すスクリーンショットを追加する -->
+生成した `scene_with_references.usda` を Isaac Sim の `File > Open` で開くと、次のように表示されます。
+
+![scene_with_references.usda を開いたところ。Stage パネルのツリーが USD の Prim の階層に対応している](assets/03-usd-basics/stage-panel.webp)
+
+右上の Stage パネルには `World > Cone_0 / Cone_1 > Body` というツリーが表示され、Prim の階層と一致しています。シーンファイルの `Cone_0` には `Body` を書いていませんが、Reference で `traffic_cone.usda` から取り込まれるため、Stage には現れます。`Cone_1/Body` を選択すると、右下の Property パネルの `Display Color` に、`over` で上書きした `(0.1, 0.8, 0.1)` が表示されます。ビューポートでも、`Cone_1` だけが緑になっています。
 
 ## まとめ
 
