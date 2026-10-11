@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<!--
+  付録 E で使う、Jetbot に近い大きさの差動二輪ロボット。
+  メッシュを使わず、箱・円柱・球だけで作っている。
+  - base_link: 車体 (箱)。原点は車輪の軸の高さにある
+  - left_wheel / right_wheel: 車輪 (円柱、半径 0.03 m)。車輪の間隔は 0.1125 m
+  - caster: 後ろの補助輪 (球)。base_link に固定する
+-->
+<robot name="my_diffbot">
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.14 0.09 0.04"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.14 0.09 0.04"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0.02" rpy="0 0 0"/>
+      <mass value="0.5"/>
+      <inertia ixx="0.0004" ixy="0" ixz="0" iyy="0.0009" iyz="0" izz="0.0012"/>
+    </inertial>
+  </link>
+
+  <link name="left_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.02"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.02"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.000013" ixy="0" ixz="0" iyy="0.000023" iyz="0" izz="0.000013"/>
+    </inertial>
+  </link>
+
+  <link name="right_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.02"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.02"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.000013" ixy="0" ixz="0" iyy="0.000023" iyz="0" izz="0.000013"/>
+    </inertial>
+  </link>
+
+  <link name="caster">
+    <visual>
+      <geometry>
+        <sphere radius="0.015"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.015"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.01"/>
+      <inertia ixx="0.000001" ixy="0" ixz="0" iyy="0.000001" iyz="0" izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <!-- 車輪は y 軸まわりに回る。左右は y 方向に 0.1125 / 2 m 離す -->
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="left_wheel"/>
+    <origin xyz="0.03 0.05625 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="1.0" velocity="20.0"/>
+  </joint>
+
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="right_wheel"/>
+    <origin xyz="0.03 -0.05625 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="1.0" velocity="20.0"/>
+  </joint>
+
+  <!-- 補助輪は後ろ側。球の下端が車輪の下端 (地面) と同じ高さになるようにする -->
+  <joint name="caster_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="caster"/>
+    <origin xyz="-0.05 0 -0.015" rpy="0 0 0"/>
+  </joint>
+</robot>
