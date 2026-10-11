@@ -44,7 +44,7 @@ ROS 2 との連携や Isaac Lab による強化学習は扱いません。これ
 
 | 付録 | 状態 |
 | --- | --- |
-| [A. クラウドで動かす](appendix/cloud.md) | 執筆中 |
+| [A. クラウドで動かす](appendix/cloud.md) | 完成 |
 | [B. トラブルシューティング](appendix/troubleshooting.md) | 執筆中 |
 | [C. 次の一歩](appendix/next-steps.md) | 完成 |
 
