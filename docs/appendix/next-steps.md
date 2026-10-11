@@ -9,8 +9,8 @@
 
 7 章までで、Python のスタンドアロンスクリプトからシーンを作り、Jetbot を動かし、カメラと LiDAR のデータを取得して障害物回避を行いました。この付録では、そこから先に進むための代表的な方向を紹介します。どれも本チュートリアルの範囲外なので、概要と公式ドキュメントへの入り口だけを示します。
 
-!!! note "この付録の内容は未検証です"
-    ここで紹介する機能は、本チュートリアルの検証環境 (Ubuntu 24.04 + RTX 2080 Ti) では動作を確認していません。バージョンの対応関係などは、執筆時点の公式ドキュメントに基づいています。
+!!! note "この付録の内容はほとんど未検証です"
+    本チュートリアルの検証環境 (Ubuntu 24.04 + RTX 2080 Ti) で確認したのは、[同梱の ROS 2 ライブラリが読み込まれること](#ros2-internal-libs) だけです。トピックの配信・購読や Isaac Lab などは試していません。バージョンの対応関係などは、執筆時点の公式ドキュメントに基づいています。
 
 ## ROS 2 との連携 {#ros2}
 
@@ -27,6 +27,27 @@ Isaac Sim 6.1.0 が対応している ROS 2 のディストリビューション
 | Humble | Ubuntu 22.04 | |
 
 Isaac Sim には ROS 2 のライブラリが同梱されています (internal ROS libraries)。そのため、Isaac Sim 側に ROS 2 をインストールしなくても ROS 2 Bridge は動作します。ただし、`ros2 topic echo` などのコマンドや自作のノードを動かすには、ホストや別のコンテナに ROS 2 を用意する必要があります。
+
+### 同梱の ROS 2 ライブラリを確かめる {#ros2-internal-libs}
+
+本チュートリアルの Docker 構成 (`docker compose -f docker/compose.yml up -d`) でも、起動時に同梱の ROS 2 ライブラリが読み込まれます。`docker compose` で起動して `(healthy)` になったあと、Isaac Sim のログ (ホストの `~/docker/isaac-sim/logs/Kit/` の下にある `kit_*.log`) を検索すると確認できます。
+
+```bash
+log=$(ls -t ~/docker/isaac-sim/logs/Kit/*/*/kit_*.log | head -1)   # いちばん新しいログ
+grep -a -E "rclpy|\[ext: isaacsim\.ros2\.bridge-.*\] startup" "$log" | grep -v walked
+```
+
+検証環境では、次の出力がありました (行頭の時刻などは省略しています)。
+
+```text
+Attempting to load system rclpy
+Could not import system rclpy: No module named 'rclpy'
+Attempting to load internal rclpy for ROS Distro: jazzy
+rclpy loaded
+[ext: isaacsim.ros2.bridge-5.1.4] startup
+```
+
+コンテナに ROS 2 は入っていないので、まずシステムの `rclpy` を探して見つからず、次に同梱の Jazzy 用の `rclpy` を読み込んでいます。そのあとで ROS 2 Bridge の拡張機能 (`isaacsim.ros2.bridge`) が起動しています。
 
 !!! tip "Docker で使う場合"
     公式ドキュメントには、ROS 2 を Docker コンテナで動かす手順 (Running ROS in Docker Containers) も載っています。ROS 2 の環境を Isaac Sim のコンテナと分けておくと、ホストを汚さずに試せます。
