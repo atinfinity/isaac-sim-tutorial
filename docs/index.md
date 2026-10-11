@@ -2,9 +2,6 @@
 
 Docker 上で [NVIDIA Isaac Sim](https://developer.nvidia.com/isaac/sim) を動かし、Python からロボットのシミュレーションができるようになるまでを解説する、初学者向けのチュートリアルです。
 
-!!! warning "執筆中"
-    このチュートリアルは現在執筆中です。下の [目次](#contents) で「執筆中」となっている章は、内容が未完成か、検証環境での動作確認が済んでいません。
-
 ## 対象読者 {#audience}
 
 - Python でプログラムを書ける
@@ -47,6 +44,9 @@ ROS 2 との連携や Isaac Lab による強化学習は扱いません。これ
 | [A. クラウドで動かす](appendix/cloud.md) | 完成 |
 | [B. トラブルシューティング](appendix/troubleshooting.md) | 完成 |
 | [C. 次の一歩](appendix/next-steps.md) | 完成 |
+
+!!! note "付録 A・付録 C の検証について"
+    本編 (0〜7 章) と付録 B は、検証環境で動作を確認しています。付録 A (クラウド) と付録 C (ROS 2・Isaac Lab) は公式ドキュメントに基づく紹介が中心で、検証環境では動作を確認していない部分があります。詳しくは各付録の冒頭を参照してください。
 
 ## 進め方 {#how-to-proceed}
 

@@ -302,7 +302,7 @@ docker compose -f docker/compose.yml run --rm --no-deps --entrypoint /isaac-sim/
 ModuleNotFoundError: No module named 'isaacsim'
 ```
 
-`isaacsim` パッケージはコンテナの中にしかないためです。4 章の [スクリプトをコンテナで実行する](../04-python-standalone.md) のとおり、コンテナの `/isaac-sim/python.sh` で実行してください。なお、コンテナの中にも `python3` コマンドはありません (`--entrypoint python3` を指定すると `executable file not found in $PATH` になります)。
+`isaacsim` パッケージはコンテナの中にしかないためです。4 章の [スクリプトをコンテナで実行する](../04-python-standalone.md#run-in-container) のとおり、コンテナの `/isaac-sim/python.sh` で実行してください。なお、コンテナの中にも `python3` コマンドはありません (`--entrypoint python3` を指定すると `executable file not found in $PATH` になります)。
 
 #### `No module named 'pxr'` {#no-module-pxr}
 
