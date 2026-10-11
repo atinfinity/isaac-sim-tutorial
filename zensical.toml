@@ -23,6 +23,7 @@ nav = [
     "appendix/troubleshooting.md",
     "appendix/next-steps.md",
     "appendix/other-sensors.md",
+    "appendix/robot-import.md",
   ] },
 ]
 
