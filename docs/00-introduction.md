@@ -45,10 +45,56 @@ ROS 2 や強化学習の知識は必要ありません。
 
 ロボットのアルゴリズムを実機で試す前に検証したり、機械学習用の合成データを作ったりする用途で使われています。
 
-!!! note "Isaac Sim / Isaac Lab / Omniverse の関係"
-    - **Omniverse Kit**: NVIDIA の 3D アプリケーション基盤。Isaac Sim はこの上に作られています
-    - **Isaac Sim**: ロボットシミュレータ本体。このチュートリアルの対象です
-    - **Isaac Lab**: Isaac Sim の上に作られた、ロボット学習 (強化学習・模倣学習) 用のフレームワーク。付録 C で紹介します
+## Isaac Sim と関連するソフトウェア {#ecosystem}
+
+Isaac Sim について調べると、**Omniverse**・**Isaac Lab**・**Isaac ROS** といった名前がよく一緒に出てきます。どれも NVIDIA のソフトウェアで名前が似ていますが、役割はそれぞれ違います。関係を図にすると次のようになります。
+
+```mermaid
+flowchart TB
+    subgraph PC["シミュレーションを動かす PC (RTX GPU)"]
+        lab["Isaac Lab<br/>ロボット学習のフレームワーク"]
+        sim["Isaac Sim<br/>ロボットシミュレータ"]
+        subgraph ov["NVIDIA Omniverse"]
+            kit["Omniverse Kit<br/>アプリケーションを作るための SDK"]
+            tech["OpenUSD・RTX レンダラ・PhysX など"]
+        end
+        lab -- "上に作られている" --> sim
+        sim -- "上に作られている" --> kit
+        kit --- tech
+    end
+    subgraph robot["ロボット (Jetson など)"]
+        isaacros["Isaac ROS<br/>GPU で高速化した ROS 2 パッケージ"]
+    end
+    sim <-- "ROS 2 のトピック<br/>(ROS 2 Bridge)" --> isaacros
+```
+
+| ソフトウェア | 役割 | このチュートリアルでの扱い |
+| --- | --- | --- |
+| NVIDIA Omniverse | 3D アプリケーションを作るためのプラットフォーム。シーンの記述 (OpenUSD)、レンダリング (RTX)、物理演算 (PhysX) などの技術と、アプリケーションを作るための SDK (**Omniverse Kit**) からなる | Isaac Sim の土台として、USD (3 章) や拡張機能の仕組みに触れる |
+| Isaac Sim | Omniverse の上に作られたロボットシミュレータ | 本編 (1〜7 章) で扱う |
+| Isaac Lab | Isaac Sim の上に作られたロボット学習 (強化学習・模倣学習など) 用のフレームワーク | [付録 C](appendix/next-steps.md#isaac-lab) で紹介する |
+| Isaac ROS | GPU で高速化した ROS 2 のパッケージ群。Jetson などで動かし、実機のロボットのソフトウェアに組み込む | 扱わない |
+
+### Omniverse と Isaac Sim
+
+Omniverse は、特定の用途のアプリケーションではなく、3D アプリケーションを作るための土台です。Isaac Sim はその上に作られたアプリケーションの 1 つで、Omniverse の技術をロボットのシミュレーション向けにまとめたものです。
+
+Isaac Sim の機能は、Omniverse Kit の **拡張機能 (Extension)** として作られています。このチュートリアルで使う `isaacsim.core.experimental` 系の API や、3 章で出てくる `omni.usd.libs` も、拡張機能として提供されています。シーンを USD で表すのも、Omniverse の上に作られているからです。
+
+### Isaac Lab と Isaac Sim
+
+Isaac Lab は、Isaac Sim の上に作られたロボット学習用のフレームワークです。シミュレーションそのものは Isaac Sim が行い、Isaac Lab は多数の環境を並列に動かしたり、報酬を定義して方策を学習させたりする部分を受け持ちます。
+
+Isaac Lab と組み合わせて使える Isaac Sim のバージョンは、Isaac Lab のバージョンごとに決まっています。このチュートリアルの Isaac Sim 6.1.0 に対応するバージョンは、[付録 C](appendix/next-steps.md#isaac-lab) を参照してください。
+
+### Isaac ROS と Isaac Sim
+
+Isaac ROS は、名前に「Isaac」が付いていますが、シミュレータではありません。実機のロボット (Jetson など) で動かす ROS 2 のパッケージ群で、画像認識や自己位置推定などの処理を GPU で高速化します。Isaac Sim をインストールしても Isaac ROS は入りませんし、Isaac ROS を使うのに Isaac Sim は必須ではありません。
+
+!!! warning "Isaac ROS と ROS 2 Bridge を混同しない"
+    Isaac Sim には、シミュレータのセンサデータを ROS 2 のトピックとして配信する **ROS 2 Bridge** があります ([付録 C](appendix/next-steps.md#ros2))。これは Isaac Sim の機能の 1 つで、Isaac ROS とは別物です。
+
+両者は ROS 2 のトピックを通じて組み合わせられます。Isaac Sim のカメラ画像を ROS 2 Bridge で配信し、それを Isaac ROS のパッケージで処理すると、実機のロボットがなくても Isaac ROS の処理をシミュレーションで試せます。
 
 ## 検証環境
 
@@ -115,7 +161,10 @@ cd isaac-sim-tutorial
 | 用語 | 意味 |
 | --- | --- |
 | Isaac Sim | NVIDIA のロボットシミュレータ |
-| Omniverse Kit | Isaac Sim の土台になっている NVIDIA の 3D アプリケーション基盤。Isaac Sim の機能は Kit の **拡張機能 (Extension)** として提供されている |
+| Omniverse | NVIDIA の 3D アプリケーションのプラットフォーム。Isaac Sim はこの上に作られている ([関連するソフトウェア](#ecosystem)) |
+| Omniverse Kit | Omniverse のアプリケーションを作るための SDK。Isaac Sim の機能は Kit の **拡張機能 (Extension)** として提供されている |
+| Isaac Lab | Isaac Sim の上に作られたロボット学習用のフレームワーク (付録 C) |
+| Isaac ROS | GPU で高速化した ROS 2 のパッケージ群。Isaac Sim とは別のソフトウェア ([関連するソフトウェア](#ecosystem)) |
 | NGC | NVIDIA GPU Cloud。Isaac Sim の Docker イメージ (`nvcr.io/nvidia/isaac-sim`) はここで配布されている |
 | NVIDIA Container Toolkit | Docker コンテナから GPU を使えるようにするツール |
 | ヘッドレス (headless) | 画面 (ウィンドウ) を表示せずに実行すること |
@@ -165,3 +214,7 @@ cd isaac-sim-tutorial
 - [Isaac Sim 6.1.0 ドキュメント](https://docs.isaacsim.omniverse.nvidia.com/6.1.0/index.html)
 - [Isaac Sim の動作要件](https://docs.isaacsim.omniverse.nvidia.com/6.1.0/installation/requirements.html)
 - [Isaac Sim (GitHub)](https://github.com/isaac-sim/IsaacSim)
+- [Omniverse Kit の概要 (Kit Manual)](https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/kit_overview.html)
+- [Isaac Lab ドキュメント](https://isaac-sim.github.io/IsaacLab/main/index.html)
+- [Isaac ROS ドキュメント](https://nvidia-isaac-ros.github.io/index.html)
+- [NVIDIA Isaac ROS (Isaac Sim ドキュメント)](https://docs.isaacsim.omniverse.nvidia.com/6.1.0/nvidia_isaac_ros/isaac_ros_tutorials.html)
