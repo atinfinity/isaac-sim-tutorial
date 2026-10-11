@@ -7,15 +7,12 @@
     - **前提**: 5 章
     - **対象バージョン**: Isaac Sim 6.1.0
 
-!!! warning "未検証 (GUI での取り込み)"
-    Python のサンプル (`01`〜`03`) は、検証環境 (Ubuntu 24.04 + RTX 2080 Ti、Isaac Sim 6.1.0) で実行し、本文の出力を確かめています。GUI の `File > Import` による取り込みは、検証環境で確かめられていないため、手順を載せずに公式のチュートリアルを案内するだけにしています。
-
 本編では、Isaac Sim に用意されている Jetbot のアセット (USD) を使ってきました。自分で設計したロボットや、ROS のパッケージで配布されているロボットを使いたいときは、そのロボットを Isaac Sim に取り込む必要があります。
 
 ロボットの形や関節は、**URDF** (Unified Robot Description Format) という XML のファイルで書かれていることがよくあります。ROS で広く使われている形式です。Isaac Sim は URDF を直接は読めないので、**URDF Importer** で USD に変換してから使います。この付録では、次の流れを試します。
 
 1. Jetbot に近い大きさの差動二輪ロボットを URDF で書く
-2. URDF Importer で USD に変換する (Python。GUI は公式チュートリアルを案内する)
+2. URDF Importer で USD に変換する (GUI と Python)
 3. 変換した USD の関節・コリジョン・質量を確かめ、足りない設定を補う
 4. 5 章と同じコントローラで走らせ、Jetbot と比べる
 
@@ -85,9 +82,37 @@ URDF は、**リンク** (`<link>`、部品) と **関節** (`<joint>`、部品�
 
 ## GUI で取り込む {#import-gui}
 
-GUI では、メニューの `File > Import` で URDF ファイルを選ぶと、変換の設定 (保存先・関節の駆動・土台の固定など) を指定するダイアログが開きます。設定の項目は、次に説明する Python の `URDFImporterConfig` とほぼ対応しています。手順は公式の [Tutorial: Import URDF](https://docs.isaacsim.omniverse.nvidia.com/6.1.0/importer_exporter/import_urdf.html) を参照してください。
+まず GUI で取り込んでみます。1 章の手順で Isaac Sim を起動し、ブラウザで `http://localhost:8210` を開いておいてください。
 
-この付録では GUI の手順を検証できていないため、以降は Python で取り込みます。Python なら、同じ設定で何度でも変換し直せるので、URDF を直しながら試すときにも便利です。
+1. メニューの `File > Import` を選ぶ。「Select File」のダイアログが開く
+2. 左のツリーで `/workspace/examples` → `appendix_e_urdf` を開き、`my_diffbot.urdf` を選ぶ。右側に変換の設定 (Import options) が表示される
+3. `USD Output` の右のフォルダのボタンで、保存先に `/isaac-sim/.local/share/ov/data` を選ぶ
+4. `Base Type` を `Mobile` にする
+5. `Import` を押す
+
+![File > Import のダイアログ。my_diffbot.urdf を選ぶと、右側に変換の設定が表示される](../assets/robot-import/import-dialog.webp)
+
+設定の項目は次のとおりです。多くは、次に説明する Python の `URDFImporterConfig` の設定と対応しています。
+
+| 項目 | 意味 | Python の設定 |
+| --- | --- | --- |
+| `USD Output` | 変換した USD の保存先。既定は URDF と同じフォルダ | `usd_path` |
+| `ROS Package List` | URDF の中の `package://` のパスを、実際のフォルダに対応づける | — |
+| `Collision From Visuals` | 見た目の形から衝突判定の形を作る | `collision_from_visuals` |
+| `Allow Self-Collision` | ロボットの部品どうしの衝突を判定する | `allow_self_collision` |
+| `Base Type` | `Source` (URDF のまま)・`Fixed` (土台を床に固定)・`Mobile` (固定しない) | `fix_base` |
+| `Add Reference to Stage` | 変換した USD を、いまのステージに読み込む | — |
+
+`examples/` はコンテナに読み取り専用でマウントしているので、`USD Output` には書き込める場所を指定します。手順 3 のように `/isaac-sim/.local/share/ov/data` (ホストの `~/docker/isaac-sim/data`) を選ぶと、その下に `my_diffbot/` のフォルダができ、`my_diffbot.usda` などが保存されます。
+
+`Add Reference to Stage` にチェックが入っていると、変換が終わったあと、ステージの直下に `/my_diffbot` ができます (`/World` の下ではありません)。Stage パネルで `/my_diffbot` を選び、マウスをビューポートに置いて `F` キーを押すと、ロボットが画面の中央に表示されます。Property パネルの `Variants` を見ると、物理の設定 (`Physics`) に `physx` が選ばれています (variant については [変換した USD の構成](#usd-structure) で説明します)。
+
+![GUI で取り込んだ my_diffbot。Property パネルの Variants で physx が選ばれている](../assets/robot-import/imported-robot.webp)
+
+!!! warning "GUI のダイアログには関節の駆動の設定がない"
+    検証環境 (Isaac Sim 6.1.0) の `File > Import` のダイアログには、関節の駆動 (Python の `joint_target_type` や `override_joint_damping`) を指定する項目がありませんでした。取り込むと、画面下に「Stiffness and damping not available joint /my_diffbot/Physics/right_wheel_joint, actuator will be created without gain parameters」という警告が表示され、変換した USD の車輪の関節には、駆動の強さ (damping) が入っていませんでした。この状態では、[あとで説明する](#default-settings) ように、車輪に速度を指令しても回りません。走らせるには、取り込んだあとで関節の駆動を設定するか、次の Python で取り込みます。
+
+この付録では、以降は Python で取り込みます。Python なら駆動も含めて設定でき、同じ設定で何度でも変換し直せるので、URDF を直しながら試すときにも便利です。
 
 ## Python で取り込む {#import-python}
 

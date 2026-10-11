@@ -1,7 +1,7 @@
 # 付録 E: 自作ロボットの取り込み (URDF)
 
 > [!NOTE]
-> 検証環境 (Ubuntu 24.04 + RTX 2080 Ti、Isaac Sim 6.1.0 の Docker イメージ) で、ヘッドレスで実行して動作を確認しました。GUI の `File > Import` による取り込みは確かめていません。
+> 検証環境 (Ubuntu 24.04 + RTX 2080 Ti、Isaac Sim 6.1.0 の Docker イメージ) で、ヘッドレスで実行して動作を確認しました。GUI の `File > Import` による取り込みも、Web ビューアで確かめました。
 
 | ファイル | 内容 |
 | --- | --- |
@@ -41,4 +41,4 @@ docker compose -f docker/compose.yml run --rm --no-deps --entrypoint /isaac-sim/
 - [x] 0.2 m/s で 2 秒進む指令で比べると、既定のままでは動かない (車輪は指令と関係なく 77.03 と -6.09 rad/s で回る)、`fix_base=False` だけでも動かない (車輪がほぼ回らない)、駆動の設定も加えると 0.361 m 進む
 - [x] `URDFImporterConfig` の `usd_path` の既定値は URDF と同じフォルダ。`examples/` は読み取り専用でマウントしているので、保存先を指定する
 - [x] `WheeledRobot(..., usd_path=<変換した USD>)` で読み込むと、variant が選ばれず `Path.IsValidPathString(NoneType)` で止まる
-- [ ] GUI の `File > Import` による取り込みは試していない (Web ビューアの画面を取得できなかったため)
+- [x] GUI の `File > Import` (Base Type: Mobile) で取り込める。ダイアログに関節の駆動の設定はなく、車輪の関節の damping は入らない (警告「Stiffness and damping not available joint ...」が出る)。`Add Reference to Stage` では `/my_diffbot` に読み込まれ、variant `Physics` は `physx` が選ばれる
