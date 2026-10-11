@@ -7,8 +7,7 @@
     - **前提**: 1 章
     - **対象バージョン**: Isaac Sim 6.1.0
 
-!!! warning "執筆中"
-    この章はまだ執筆中です。症状とエラーメッセージは、検証環境で実際に確認したものから順に追加していきます。
+この付録のエラーメッセージは、検証環境 (Ubuntu 24.04 + RTX 2080 Ti) でわざと問題を起こして確認したものです。再現できなかった問題は、考えられる原因だけを挙げています。
 
 うまく動かないときは、まず次の 3 つを確認してください。
 
@@ -42,18 +41,45 @@ cat /proc/driver/nvidia/version   # 動いているカーネルモジュール�
 
 ### その他の理由でコンテナが起動しない {#container-not-starting}
 
-TODO: 症状・原因・対処
+エラーメッセージから原因を切り分けます。
 
-- NVIDIA Container Toolkit が入っていない、または Docker に設定されていない (`runtime: nvidia` が使えない)
-- NVIDIA ドライバのバージョンが古い
-- イメージの取得 (`docker pull`) に失敗している
+**`unknown or invalid runtime name`**: Docker に `nvidia` ランタイムが登録されていません。
+
+```text
+docker: Error response from daemon: unknown or invalid runtime name: nvidia
+```
+
+NVIDIA Container Toolkit が入っていないか、インストール後の Docker の設定 (`nvidia-ctk runtime configure --runtime=docker` と Docker の再起動) をしていないのが原因です。1 章の [Docker と NVIDIA Container Toolkit](../01-setup.md#docker) の手順をやり直し、`docker info | grep -i runtimes` に `nvidia` が出ることを確認してください。
+
+!!! note
+    検証環境には Container Toolkit が入っているため、存在しないランタイム名 (`nvidiax`) を指定して同じ種類のエラーが出ることを確認しました。
+
+**`manifest unknown`**: 指定したイメージのタグが存在しません。
+
+```text
+Error response from daemon: manifest for nvcr.io/nvidia/isaac-sim:6.1.99 not found: manifest unknown: manifest unknown
+```
+
+`docker/.env` の `ISAAC_SIM_IMAGE` を設定している場合は、タグ (`6.1.0`) の綴りを確認してください。ネットワークの問題でイメージを取得できない場合も `docker pull` の段階で失敗するので、`docker pull nvcr.io/nvidia/isaac-sim:6.1.0` を単独で実行して確認します。
+
+**上のどちらでもない場合**: NVIDIA ドライバが古い可能性があります (検証環境では再現していません)。ホストの `nvidia-smi` の右上に出るドライバのバージョンが、[Isaac Sim Requirements](https://docs.isaacsim.omniverse.nvidia.com/6.1.0/installation/requirements.html) の要件を満たしているかを確認してください。
 
 !!! tip
     `nvcr.io/nvidia/isaac-sim:6.1.0` の取得に NGC へのログイン (`docker login nvcr.io`) は必要ありません。
 
 ### キャッシュ用ディレクトリの権限エラー {#permission-denied}
 
-TODO: 実際のエラーメッセージ
+キャッシュ用ディレクトリをホストのユーザーの所有のままにしておくと、コンテナは起動しますが、ログに次のようなエラーがたくさん出て、Isaac Sim が正しく動きません。
+
+```text
+[Error] [omni.datastore] Failed to create local file data store at '/isaac-sim/kit/cache/DerivedDataCache'
+[Error] [omni.rtx] Failed to initialize rtx::shaderdb::ContextManager
+PermissionError: [Errno 13] Permission denied: '/isaac-sim/.cache/warp'
+pxr.Tf.ErrorException: ... OmniUsdResolver: Unable to open asset '.../default_environment.usd'. Could not download local file
+```
+
+!!! warning
+    このときも、スクリプトの終了コードは 0 (成功) になることがあります。終了コードだけで判断せず、ログに `Permission denied` がないかを確認してください。
 
 コンテナ内の Isaac Sim は uid 1234 のユーザーで動きます。ホスト側のキャッシュ用ディレクトリが uid 1234 の所有になっていないと、書き込みに失敗します。1 章の手順どおりに作成し直してください。
 
@@ -108,11 +134,24 @@ docker compose -f docker/compose.yml run --rm --no-deps --entrypoint /isaac-sim/
 
 ### Web ビューアに何も映らない {#blank-viewer}
 
-TODO: 症状・原因・対処
+表示によって原因が分かれます。
 
-- Isaac Sim の起動が終わっていない (`docker compose ps` で healthy になるまで待つ)
-- Chromium 系以外のブラウザを使っている
-- 別の PC から接続しているのに `ISAACSIM_HOST` を設定していない
+**`Reconnection attempt (5 of 5) failed` と表示される**: Web ビューアが Isaac Sim に接続できていません。Isaac Sim が動いていないときは、次のように表示されます。
+
+```text
+ERROR
+
+Reconnection attempt (5 of 5) failed. Session start failed with error: "Error occurred during sign-in request to signaling server."
+```
+
+`docker compose -f docker/compose.yml ps` で `isaac-sim` が `(healthy)` になっているかを確認してください。起動中 (`health: starting`) の場合は、healthy になるまで待ってからページを再読み込みします。スクリプトを `--livestream` 付きで実行している場合は、スクリプトの起動が終わるまで待ってから再読み込みします。
+
+**画面が真っ黒のまま**: 接続した直後は、映像が黒いままのことがあります。ビューポートの上でマウスを動かすと表示されます。
+
+**それでも映らない場合**: 次の原因が考えられます (検証環境では再現していません)。
+
+- Chromium 系以外のブラウザを使っている。Chrome や Edge で開いてください
+- 別の PC から接続しているのに `ISAACSIM_HOST` を設定していない ([別の PC のブラウザから接続できない](#remote-access) を参照)
 
 ### メニューが見えない (画面の上端が切れる) {#menu-hidden}
 
@@ -126,21 +165,47 @@ Web ビューアでは、キー操作はブラウザに表示された映像に�
 
 ### 別の PC のブラウザから接続できない {#remote-access}
 
-TODO: 手順の確認
+既定の設定では、Web ビューアは `127.0.0.1` (ブラウザを開いた PC 自身) の Isaac Sim に接続しようとします。別の PC から開くには、Isaac Sim を動かしているホストの LAN 側 IP アドレスを設定します。
 
-Web ビューアは、ビルド時に `ISAACSIM_HOST` の値を埋め込みます。`docker/.env` でホストの LAN 側 IP アドレスを設定したら、`--build` を付けて起動し直してください。
+1. ホストの IP アドレスを調べます
 
-```bash
-docker compose -f docker/compose.yml up -d --build
-```
+    ```bash
+    hostname -I
+    ```
 
-ファイアウォールでポート (8210、49100、47998) が塞がれていないかも確認してください。
+2. `docker/.env.example` を `docker/.env` にコピーし、`ISAACSIM_HOST` の行のコメントを外して、調べた IP アドレスに書き換えます
+
+    ```bash
+    ISAACSIM_HOST=192.168.1.50
+    ```
+
+3. Web ビューアはビルド時に `ISAACSIM_HOST` の値を埋め込むので、`--build` を付けて起動し直します
+
+    ```bash
+    docker compose -f docker/compose.yml up -d --build
+    ```
+
+4. 両方のサービスが `(healthy)` になったら、ブラウザで `http://<ホストの IP アドレス>:8210` を開きます
+
+検証環境では、この手順で `http://192.168.1.50:8210` を開き、Isaac Sim の画面が表示されることを確認しました。
+
+それでも接続できない場合は、ホストのファイアウォールで次のポートが塞がれていないかを確認してください。
+
+| ポート | 用途 |
+| --- | --- |
+| 8210 | Web ビューアのページ |
+| 49100 | シグナリング (接続の確立) |
+| 47998 | 映像のストリーミング |
+
+!!! tip "元に戻すとき"
+    `docker/.env` から `ISAACSIM_HOST` の行を消し (またはコメントに戻し)、もう一度 `--build` を付けて起動します。
 
 ### 画面がカクつく・遅延が大きい {#laggy-viewer}
 
-TODO
+検証環境では、同じ LAN 内の別の PC から接続して、ビューポートの操作やシミュレーションの再生でカクつきや遅延は感じませんでした。カクつく場合は、次の原因が考えられます (検証環境では再現していません)。
 
-検証環境では、同じ LAN 内の別の PC から接続して、ビューポートの操作やシミュレーションの再生でカクつきや遅延は感じませんでした。
+- Wi-Fi など、ネットワークの帯域が足りない。有線 LAN で接続するか、同じ PC のブラウザ (`http://localhost:8210`) で開いて比べてみてください
+- GPU の負荷が高い。`nvidia-smi` で GPU の使用率を確認し、シーンを軽くする (ロボットやセンサの数を減らす) と改善するかを試してください
 
 ## 実行時 {#runtime}
 
@@ -175,13 +240,22 @@ GUI を操作していると、画面の下端 (ステータスバー) に黄色
 
 起動直後は CPU 使用率が高い状態 (16 論理コアのうち 13 コア分ほど) がしばらく続きます。
 
-### アセットの読み込みが終わらない {#asset-loading}
+### アセットを読み込めない {#asset-loading}
 
-TODO
+5 章以降のサンプルは、Jetbot などのアセットをインターネット上のサーバー (Amazon S3) から読み込みます。ネットワークにつながらない状態で実行すると、次のエラーで止まります。
+
+```text
+RuntimeError: Could not find assets root folder: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1
+```
+
+アセットのルートを調べる `get_assets_root_path()` が、サーバーに接続できずに失敗しています。ホストからインターネットに接続できるか (プロキシの設定が必要な環境ではないか) を確認してください。
+
+!!! warning
+    このエラーでも、スクリプトの終了コードは 0 (成功) になりました。
+
+検証環境では、ネットワークを切ったコンテナ (`docker run --network none`) で 5 章のサンプルを実行して、このエラーを確認しました。エラーになるまでに約 80 秒かかります。
 
 ### GPU のメモリが足りない {#out-of-memory}
-
-TODO: メモリ不足時のエラーメッセージ
 
 検証環境 (RTX 2080 Ti / VRAM 11GB) で Web ビューアから GUI を使ったときの使用量は次のとおりでした。Jetbot 1 台程度のシーンであれば、VRAM 11GB でも十分に余裕があります。
 
@@ -191,9 +265,44 @@ TODO: メモリ不足時のエラーメッセージ
 | Jetbot を配置 | 約 1.9GB | 約 12.6GB |
 | Jetbot を配置して再生中 | 約 2.1GB | 約 12.7GB |
 
+このチュートリアルの範囲では、メモリ不足は再現しませんでした。大きなシーンでメモリが足りなくなった場合は、次を試してください。
+
+- `nvidia-smi` で、ほかのプロセス (別の Isaac Sim のコンテナなど) が VRAM を使っていないかを確認する
+- `docker stats` で、isaac-sim コンテナの RAM の使用量を確認する
+- シーンのロボットやセンサの数、カメラの解像度を減らす
+
 ### サンプルコードでエラーが出る {#example-errors}
 
-TODO: よくある原因 (Isaac Sim のバージョン違い、`python.sh` 以外の Python で実行している など)
+まず、ログの中のエラー (`Error` や `Traceback`) を確認してください。Isaac Sim のログは長いので、`grep` で絞り込むと見つけやすくなります。
+
+```bash
+docker compose -f docker/compose.yml run --rm --no-deps --entrypoint /isaac-sim/python.sh isaac-sim \
+  /workspace/examples/05_robot_control/01_load_jetbot.py 2>&1 | grep -a -E "Error|Traceback"
+```
+
+!!! warning "終了コードは当てにならない"
+    スクリプトの中で例外が起きても、終了コードが 0 (成功) になることがあります。期待した出力 (画像やメッセージ) が出ているかで判断してください。
+
+よく出るエラーと参照先は次のとおりです。
+
+| エラー | 原因 | 参照先 |
+| --- | --- | --- |
+| `No module named 'isaacsim'` | `python.sh` 以外の Python で実行している | [下記](#no-module-isaacsim) |
+| `No module named 'pxr'` | USD のパスを設定せずに 3 章のスクリプトを実行している | [下記](#no-module-pxr) |
+| `RuntimeError: Could not find assets root folder` | アセットのサーバーに接続できない | [アセットを読み込めない](#asset-loading) |
+| `PermissionError: [Errno 13] Permission denied` | 出力先に書き込めない | [サンプルの出力ファイルを保存できない](#output-permission) |
+
+上のどれでもなく、`AttributeError` や `ImportError` が出る場合は、Isaac Sim のバージョンが違う可能性があります (検証環境では再現していません)。このチュートリアルのサンプルは Isaac Sim 6.1.0 の API (`isaacsim.core.experimental`) を使っているので、ほかのバージョンでは動かないことがあります。`docker/.env` の `ISAAC_SIM_IMAGE` を確認してください。
+
+#### `No module named 'isaacsim'` {#no-module-isaacsim}
+
+サンプルをホストの Python (`python3` や `uv run python`) で実行すると、次のエラーになります。
+
+```text
+ModuleNotFoundError: No module named 'isaacsim'
+```
+
+`isaacsim` パッケージはコンテナの中にしかないためです。4 章の [スクリプトをコンテナで実行する](../04-python-standalone.md) のとおり、コンテナの `/isaac-sim/python.sh` で実行してください。なお、コンテナの中にも `python3` コマンドはありません (`--entrypoint python3` を指定すると `executable file not found in $PATH` になります)。
 
 #### `No module named 'pxr'` {#no-module-pxr}
 
