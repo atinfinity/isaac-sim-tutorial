@@ -2,7 +2,7 @@
 
 Docker で始める NVIDIA Isaac Sim 初学者向けチュートリアル (日本語) です。
 
-- **サイト**: https://atinfinity.github.io/isaac-sim-tutorial/ (執筆中。書き終えた章から公開しています)
+- **サイト**: https://atinfinity.github.io/isaac-sim-tutorial/
 - **対象**: Isaac Sim 6.1.0 / Ubuntu + NVIDIA RTX GPU + Docker
 
 ## リポジトリ構成
