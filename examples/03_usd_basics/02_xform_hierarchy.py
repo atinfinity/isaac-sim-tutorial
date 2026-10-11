@@ -4,6 +4,8 @@
     ホスト (uv):
         uv run python examples/03_usd_basics/02_xform_hierarchy.py
     コンテナ内:
+        export PYTHONPATH=$(ls -d /isaac-sim/extscache/omni.usd.libs-*)
+        export LD_LIBRARY_PATH=$PYTHONPATH/bin
         cd /tmp
         /isaac-sim/python.sh /workspace/examples/03_usd_basics/02_xform_hierarchy.py
 """
