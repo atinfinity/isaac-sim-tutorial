@@ -38,7 +38,7 @@ ROS 2 との連携や Isaac Lab による強化学習は扱いません。これ
 | [4. Python スタンドアロン入門](04-python-standalone.md) | Python スクリプトからシーンを作り、シミュレーションを動かす | 完成 |
 | [5. ロボットを動かす](05-robot-control.md) | Jetbot を読み込み、差動二輪の制御で走らせる | 完成 |
 | [6. センサ](06-sensors.md) | Jetbot にカメラと LiDAR を取り付け、データを取得・保存する | 完成 |
-| [7. ミニプロジェクト](07-mini-project.md) | LiDAR で障害物を避けながらゴールへ向かう | 執筆中 |
+| [7. ミニプロジェクト](07-mini-project.md) | LiDAR で障害物を避けながらゴールへ向かう | 完成 |
 
 付録
 
