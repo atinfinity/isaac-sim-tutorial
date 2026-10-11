@@ -178,6 +178,7 @@ ax.set_aspect("equal")
 ax.set_xlabel("x [m]")
 ax.set_ylabel("y [m]")
 ax.grid(True)
+fig.tight_layout()
 fig.savefig(output_dir / "scan.png", dpi=100)
 print(f"[lidar] 図を保存しました: {output_dir / 'scan.png'}")
 
