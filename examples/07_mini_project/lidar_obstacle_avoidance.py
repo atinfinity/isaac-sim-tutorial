@@ -304,7 +304,7 @@ ax.set_xlabel("x [m]")
 ax.set_ylabel("y [m]")
 ax.grid(True)
 ax.legend()
-fig.savefig(output_dir / "trajectory.png", dpi=100)
+fig.savefig(output_dir / "trajectory.png", dpi=100, bbox_inches="tight")
 print(f"[mini_project] 経路の図を保存しました: {output_dir / 'trajectory.png'}")
 
 while args.livestream and simulation_app.is_running():
