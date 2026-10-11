@@ -33,5 +33,7 @@ docker compose -f docker/compose.yml run --rm --no-deps --entrypoint /isaac-sim/
 - [x] `03 --without-motion-bvh`: 距離が正解 (箱の面まで) と 0.01〜0.02 m の差で一致し、前進中の相対速度が -0.218 m/s (正解と同じ) になる。箱を遠く (`BOX_FACE_X = 3.75`) にしても同様
 - [x] `03 --without-motion-bvh`: 箱を斜め前 (`positions=[2.0, 0.5, 0.25]`) に置くと検出されず、距離 100 m・`scalar` -60 の点が 1 個だけ返る
 - [x] `03` (`--without-motion-bvh` なし): `Running radar without MotionBVH is disallowed` で止まる。公式サンプル `inspect_radar_gmo.py` も同じ
+- [x] `03`: `--/renderer/raytracingMotion/enabled=true` などの引数を直接渡しても同じエラーで止まる。実行中の設定値 `/renderer/raytracingMotion/enabled` は `True`
+- [x] `03`: 検証環境の GPU (RTX 2080 Ti) の Vulkan ドライバは `VK_NV_ray_tracing_motion_blur` を提供していない (`VK_KHR_ray_tracing_pipeline` などはある)。Isaac Sim の `libcarb.graphics-vulkan.plugin.so` はこの拡張機能の名前を含む
 - [x] GPU メモリの使用量 (GPU 全体、最大): `01`・`02` は約 2.4GB、`03` は約 6.9GB。VRAM 11GB に収まる
-- [ ] Motion BVH が有効になる GPU での `03` は試していない
+- [ ] Motion BVH が有効になる GPU での `03` は試していない (手元にそのような GPU がない)

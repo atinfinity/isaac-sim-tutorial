@@ -204,6 +204,10 @@ simulation_app = SimulationApp({"headless": True, "enable_motion_bvh": True})
 [Fatal] [rtx.sensors.radar.dmatapprox.plugin] Running radar without MotionBVH is disallowed, to force it use --/app/sensors/nv/radar/runWithoutMBVH=true
 ```
 
+公式ドキュメントにあるコマンドライン引数 (`--/renderer/raytracingMotion/enabled=true` など) を直接渡しても同じでした。実行中の設定値を読むと `/renderer/raytracingMotion/enabled` は `True` になっており、設定ではなく描画の仕組みの側で有効にならないようです。
+
+検証環境の GPU が対応している Vulkan の拡張機能を調べると、動きを含めた光線追跡の拡張機能 `VK_NV_ray_tracing_motion_blur` がありませんでした (`VK_KHR_ray_tracing_pipeline` などの通常の光線追跡の拡張機能はあります)。Isaac Sim の Vulkan のプラグインはこの拡張機能の名前を含んでいるので、Motion BVH が有効にならないのは、GPU (Turing 世代の RTX 2080 Ti) がこの機能に対応していないためと考えられます。
+
 エラーの中にあるとおり、`--/app/sensors/nv/radar/runWithoutMBVH=true` を付けると、Motion BVH なしで実行を続けられます。`03_radar.py` では、`--without-motion-bvh` を付けたときにこの設定を加えるようにしています。
 
 ```bash
