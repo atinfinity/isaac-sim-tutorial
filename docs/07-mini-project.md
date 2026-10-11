@@ -10,6 +10,10 @@
 !!! warning "執筆中"
     この章はまだ執筆中です。
 
+この章で作る Jetbot の動きです (5 倍速)。LiDAR で箱を見つけ (箱の面の白い線が LiDAR の点)、避けながら緑のゴールへ向かいます。
+
+<video src="assets/07-mini-project/lidar-obstacle-avoidance.mp4" controls muted loop playsinline width="100%"></video>
+
 ## 課題の説明
 
 TODO
