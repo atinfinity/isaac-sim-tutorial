@@ -97,7 +97,13 @@ jetbot = WheeledRobot(
 controller = DifferentialController(wheel_radius=0.03, wheel_base=0.1125)
 
 SimulationManager.setup_simulation(dt=PHYSICS_DT, device="cpu")
-app_utils.play()
+if args.livestream:
+    # ブラウザで接続してから動きを見られるように、再生 (▶) が押されるまで待つ
+    print("[go_to_goal] Web ビューアで再生 (▶) を押すと始まります", flush=True)
+    while simulation_app.is_running() and not app_utils.is_playing():
+        simulation_app.update()
+else:
+    app_utils.play()
 app_utils.update_app(steps=10)
 
 print(f"[go_to_goal] 目標地点: ({args.goal[0]:.2f}, {args.goal[1]:.2f})")

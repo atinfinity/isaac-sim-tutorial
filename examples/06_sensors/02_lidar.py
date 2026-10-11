@@ -132,7 +132,13 @@ if args.livestream:
     sensor.attach_writer("draw-point-cloud")  # 点群を画面に描く
 
 SimulationManager.setup_simulation(dt=PHYSICS_DT, device="cpu")
-app_utils.play()
+if args.livestream:
+    # ブラウザで接続してから動きを見られるように、再生 (▶) が押されるまで待つ
+    print("[lidar] Web ビューアで再生 (▶) を押すと始まります", flush=True)
+    while simulation_app.is_running() and not app_utils.is_playing():
+        simulation_app.update()
+else:
+    app_utils.play()
 
 scan = LidarScan()
 for frame in range(120):  # 2 秒分

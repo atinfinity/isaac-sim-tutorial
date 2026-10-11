@@ -1,7 +1,7 @@
 # 6 章: センサ
 
 > [!NOTE]
-> 検証環境 (Ubuntu 24.04 + RTX 2080 Ti、Isaac Sim 6.1.0 の Docker イメージ) で、ヘッドレスで実行して動作を確認しました。`--livestream` での表示はまだ確認していません。
+> 検証環境 (Ubuntu 24.04 + RTX 2080 Ti、Isaac Sim 6.1.0 の Docker イメージ) で、ヘッドレスで実行して動作を確認しました。`--livestream` での表示も Web ビューアで確認しました。
 
 | ファイル | 内容 |
 | --- | --- |
@@ -31,6 +31,6 @@ docker compose -f docker/compose.yml run --rm --no-deps -v "$PWD/output:/tmp/out
 - [x] `02`: 方位角が -180〜180 度の範囲で表示される
 - [x] `02`: 距離が 前 0.85 m・左 0.45 m・後 1.45 m・右 inf になる (箱の面までの距離)
 - [x] `02`: `output/06_lidar/scan.png` に 3 つの物体の形が見える
+- [x] `02 --livestream`: LiDAR の点群が、壁と箱の Jetbot 側の面に白い線として描かれる (再生 (▶) を押すと始まる)
 
 `Example_Rotary_2D` の設定のままでは、近い物体を検出しません (`nearRangeM = 1` と `minDistBetweenEchosM = 0.4` のため。前と左の箱が inf になる)。`02_lidar.py` では、この 2 つを変えています。終了時に `GMO magic number is not correct` という行が出ますが、結果には影響しません。
-- [ ] `02 --livestream`: LiDAR の点群が Web ビューアに描かれる

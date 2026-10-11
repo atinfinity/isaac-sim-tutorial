@@ -76,7 +76,13 @@ controller = DifferentialController(wheel_radius=WHEEL_RADIUS, wheel_base=WHEEL_
 
 SimulationManager.setup_simulation(dt=PHYSICS_DT, device="cpu")
 
-app_utils.play()
+if args.livestream:
+    # ブラウザで接続してから動きを見られるように、再生 (▶) が押されるまで待つ
+    print("[drive_jetbot] Web ビューアで再生 (▶) を押すと始まります", flush=True)
+    while simulation_app.is_running() and not app_utils.is_playing():
+        simulation_app.update()
+else:
+    app_utils.play()
 app_utils.update_app(steps=10)  # 物理エンジンの初期化と、Jetbot の着地を待つ
 
 

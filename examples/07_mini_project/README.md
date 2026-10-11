@@ -1,7 +1,7 @@
 # 7 章: ミニプロジェクト
 
 > [!NOTE]
-> 検証環境 (Ubuntu 24.04 + RTX 2080 Ti、Isaac Sim 6.1.0 の Docker イメージ) で、ヘッドレスで実行して動作を確認しました。`--livestream` での表示はまだ確認していません。
+> 検証環境 (Ubuntu 24.04 + RTX 2080 Ti、Isaac Sim 6.1.0 の Docker イメージ) で、ヘッドレスで実行して動作を確認しました。`--livestream` での表示も Web ビューアで確認しました。
 > 回避の考え方 (候補の方向ごとに、ロボットの幅の通路が空いているかを調べる) は、Isaac Sim を使わない簡易な 2D シミュレーションで確かめてあります。
 
 | ファイル | 内容 |
@@ -19,7 +19,7 @@ docker compose -f docker/compose.yml run --rm --no-deps -v "$PWD/output:/tmp/out
   /workspace/examples/07_mini_project/lidar_obstacle_avoidance.py
 ```
 
-`--goal 3.0 0.8` のようにゴールを変えたり、`--livestream` で Web ビューアから見たりできます。
+`--goal 3.0 0.8` のようにゴールを変えたり、`--livestream` で Web ビューアから見たりできます。`--livestream` のときは、スタートからゴールまでを斜め上から見下ろす視点にし、LiDAR の点群も描きます。Web ビューアで再生 (▶) を押すと走り始めます。
 
 ## 検証で確認したこと
 
@@ -28,6 +28,6 @@ docker compose -f docker/compose.yml run --rm --no-deps -v "$PWD/output:/tmp/out
 - [x] 障害物にぶつからない (一番近づいた距離 0.16 m)
 - [x] `output/07_mini_project/trajectory.png` で、箱を避けてゴールに向かう経路が描かれている
 - [x] `--goal 3.0 0.8` (16.7 秒) と `--goal 2.5 -1.0` (13.8 秒) でも到着する
+- [x] `--livestream`: 箱を避けてゴールに着く様子と、箱の面に描かれる LiDAR の点が Web ビューアで見える (25.9 秒・33.5 秒で到着、一番近づいた距離 0.16 m)。走行の動画を `docs/assets/07-mini-project/lidar-obstacle-avoidance.mp4` に置いた
 
 同じ設定でも、到着までの時間は実行するたびに少し変わります。
-- [ ] `--livestream`: 走行の様子を短い動画で撮る (7 章の冒頭に載せる)

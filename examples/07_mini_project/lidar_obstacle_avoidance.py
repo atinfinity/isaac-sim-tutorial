@@ -37,6 +37,7 @@ import numpy as np
 from isaacsim.core.experimental.materials import PreviewSurfaceMaterial
 from isaacsim.core.experimental.objects import Cube, Cylinder, DistantLight, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.robot.experimental.wheeled_robots.controllers import DifferentialController
 from isaacsim.robot.experimental.wheeled_robots.robots import WheeledRobot
@@ -227,12 +228,22 @@ lidar_prim.GetAttribute("omni:sensor:Core:minDistBetweenEchosM").Set(0.0)
 sensor = LidarSensor(lidar, annotators=["generic-model-output"])
 if args.livestream:
     sensor.attach_writer("draw-point-cloud")
+    # スタートからゴールまでが画面に収まるように、斜め上から見下ろす
+    ViewportManager.set_camera_view(
+        "/OmniverseKit_Persp", eye=[1.5, -2.2, 2.0], target=[1.5, 0.0, 0.0]
+    )
 
 # ---------------------------------------------------------------------------
 # 走らせる
 # ---------------------------------------------------------------------------
 SimulationManager.setup_simulation(dt=PHYSICS_DT, device="cpu")
-app_utils.play()
+if args.livestream:
+    # ブラウザで接続してから動きを見られるように、再生 (▶) が押されるまで待つ
+    print("[mini_project] Web ビューアで再生 (▶) を押すと始まります", flush=True)
+    while simulation_app.is_running() and not app_utils.is_playing():
+        simulation_app.update()
+else:
+    app_utils.play()
 
 scan = LidarScan()
 trajectory = []
