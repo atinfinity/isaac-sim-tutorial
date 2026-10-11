@@ -22,6 +22,16 @@ docker compose -f docker/compose.yml run --rm --no-deps --entrypoint /isaac-sim/
 
 `01_hello_simulation_app.py` の部分を `02_build_scene.py` や `03_step_simulation.py` に変えれば、ほかのスクリプトも実行できます。
 
+`02_build_scene.py` は既定でコンテナの `/tmp/output/04_scene.usda` に保存します (コンテナを削除すると消えます)。ホストに残したいときは、`~/docker/isaac-sim/data` にマウントされている場所を指定します。
+
+```bash
+docker compose -f docker/compose.yml run --rm --no-deps --entrypoint /isaac-sim/python.sh isaac-sim \
+  /workspace/examples/04_python_standalone/02_build_scene.py \
+  --save /isaac-sim/.local/share/ov/data/output/04/04_scene.usda
+```
+
+ホストの `~/docker/isaac-sim/data/output/04/04_scene.usda` にできます。
+
 ### Web ビューアで画面を見ながら実行する
 
 `isaac-sim` サービスとスクリプトが同じストリーミング用ポートを使うため、先に `isaac-sim` サービスを止めておきます。
@@ -34,12 +44,12 @@ docker compose -f docker/compose.yml run --rm --no-deps --entrypoint /isaac-sim/
   /workspace/examples/04_python_standalone/02_build_scene.py --livestream
 ```
 
-ブラウザで `http://localhost:8210` を開きます。スクリプトを終了するには `Ctrl+C` を押します。
+ブラウザで `http://localhost:8210` を開きます。スクリプトを終了するには `Ctrl+C` を押します (2 秒ほどで終了します)。
 
 ## 検証で確認したこと
 
 - [x] 3 本とも、エラーなく最後まで実行できる
 - [x] `01`: Kit のバージョン (`110.3.0`) と起動時間 (38.2 秒) が表示される
-- [x] `02`: Stage のツリーが表示され、`/tmp/output/04_scene.usda` が保存される
+- [x] `02`: Stage のツリーが表示され、`--save` で指定した場所に `.usda` が保存される
 - [x] `02 --livestream`: Web ビューアで、赤い立方体が地面の上にあり、青い立方体が浮いたままになっている。Stage に `PhysicsScene` がある
 - [x] `03`: 立方体の高さが 1.997 m から減っていき、0.100 m (立方体の半分の大きさ) で止まる。2 回目のエピソードでも 1.997 m から始まる
