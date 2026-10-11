@@ -32,11 +32,12 @@ ros2 topic echo --once /clock
 ros2 topic pub --times 3 --rate 1 /move_cube std_msgs/msg/Empty "{}"
 ```
 
-`FASTRTPS_DEFAULT_PROFILES_FILE` は、Isaac Sim 側と ROS 2 側のどちらか一方に設定すれば十分でした。設定しないと、トピックの一覧には出てもデータが届きません (付録 C の本文を参照)。
+`FASTRTPS_DEFAULT_PROFILES_FILE` は、Isaac Sim 側と ROS 2 側のどちらか一方に設定すれば十分でした。設定しないと、トピックの一覧には出てもデータが届きません。原因は付録 C の本文の「データが届かない原因」を参照してください。
 
 ## 検証で確認したこと
 
 - [x] Isaac Sim 側に `FASTRTPS_DEFAULT_PROFILES_FILE` を設定した場合: `ros2 topic list` に `/clock` と `/move_cube` が出る。`ros2 topic echo --once /clock` でシミュレーション時刻 (`sec: 10` `nanosec: 850000000`) が届く。`ros2 topic hz /clock` は約 79 Hz。`/move_cube` を 3 回配信すると、Isaac Sim 側で 3 回とも受信する
 - [x] ROS 2 側だけに設定した場合: 同じく `/clock` が届き (約 72 Hz)、`/move_cube` を 3 回とも受信する
 - [x] どちらにも設定しない場合: `ros2 topic list` には `/clock` と `/move_cube` が出るが、`ros2 topic echo --once /clock` は 10 秒待っても何も表示されず、`ros2 topic hz /clock` も何も表示されない。`/move_cube` の受信は 0 回
+- [x] 原因の切り分け (`fastdds.xml` なし): Isaac Sim 側と ROS 2 側の両方に `--ipc host` を付けても、ROS 2 側が root のままだと届かない。ROS 2 側も UID 1234 (`-u 1234:1234 -e HOME=/tmp`) にすると、両方向とも届く (`sec: 8` `nanosec: 683333333`、`/move_cube` は 3 回とも受信)。このとき `/dev/shm` には権限が `-rw-r--r--` の `fastrtps_*` ファイルがあった
 - [ ] `docker compose up` で起動した Isaac Sim (GUI) との接続、カメラや LiDAR のトピックは試していない

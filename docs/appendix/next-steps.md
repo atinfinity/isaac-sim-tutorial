@@ -133,7 +133,7 @@ clock:
     - `ros2 topic echo --once /clock` は 10 秒待っても何も表示されない
     - `/move_cube` を 3 回配信しても、Isaac Sim 側では 1 回も受信しない
 
-    ROS 2 Jazzy が既定で使う通信のミドルウェア Fast DDS は、同じマシンの相手とは共有メモリでデータを送ろうとします。別々のコンテナではこれがうまくいかないため、相手は見つかってもデータが届かないと考えられます。`fastdds.xml` は、通信を UDP だけにする設定です。公式の ROS 2 ワークスペース ([IsaacSim-ros_workspaces](https://github.com/isaac-sim/IsaacSim-ros_workspaces)) の `jazzy_ws/fastdds.xml` と同じもので、環境変数 `FASTRTPS_DEFAULT_PROFILES_FILE` でこのファイルを指定すると読み込まれます。
+    `fastdds.xml` は、Fast DDS (ROS 2 Jazzy の既定の通信ミドルウェア) の通信を UDP だけにする設定です。公式の ROS 2 ワークスペース ([IsaacSim-ros_workspaces](https://github.com/isaac-sim/IsaacSim-ros_workspaces)) の `jazzy_ws/fastdds.xml` と同じもので、環境変数 `FASTRTPS_DEFAULT_PROFILES_FILE` でこのファイルを指定すると読み込まれます。原因は、このあとの [データが届かない原因](#ros2-shm) で説明します。
 
     検証環境では、Isaac Sim 側と ROS 2 側の **どちらか一方** に設定すれば、両方向ともデータが届きました。ROS 2 側に設定する場合は、`fastdds.xml` をコンテナにマウントして指定します。
 
@@ -143,6 +143,22 @@ clock:
       -e FASTRTPS_DEFAULT_PROFILES_FILE=/cfg/fastdds.xml \
       ros:jazzy-ros-base bash
     ```
+
+#### データが届かない原因 {#ros2-shm}
+
+Fast DDS は既定で、UDP と共有メモリ (同じマシンのプロセスどうしがメモリを介してデータを渡す仕組み) の両方を使えるようにしています。そして、相手が同じマシンにいると判断すると、データを共有メモリで送ります。`--network host` で起動した 2 つのコンテナは、ネットワークの上では同じマシンに見えます。一方で、Docker のコンテナは共有メモリの置き場所 (`/dev/shm`) をコンテナごとに別々に持っています。そのため、送った側のコンテナの `/dev/shm` に書いたデータを、受け取る側のコンテナからは読めない、というのが原因です。
+
+これを確かめるため、`fastdds.xml` を使わずに条件を変えて試しました。`--ipc host` は、コンテナにホストの `/dev/shm` を使わせる Docker の設定です。Isaac Sim 側のコンテナは常に UID 1234 で動いています。
+
+| `/dev/shm` | ROS 2 側のユーザー | 結果 |
+| --- | --- | --- |
+| コンテナごとに別 (既定) | root (既定) | 一覧には出るが、両方向ともデータが届かない |
+| 両方ともホストのものを使う (`--ipc host`) | root (既定) | 届かない。ROS 2 側からは `/clock` の型も分からない |
+| 両方ともホストのものを使う (`--ipc host`) | UID 1234 (Isaac Sim と同じ) | 両方向とも届く |
+
+`/dev/shm` を共有し、さらにユーザーをそろえたときだけ、設定ファイルなしでデータが届きました。このとき `/dev/shm` には、Fast DDS が作った `fastrtps_` で始まるファイルが並んでいました。これらのファイルの権限は `-rw-r--r--` (作ったユーザーだけが書き込める) です。そのため、ユーザーが違うと相手のファイルに書き込めず、`/dev/shm` を共有しただけでは届かなかったと考えられます。
+
+一方、`fastdds.xml` で通信を UDP だけにすると、`/dev/shm` やユーザーに関係なく届きます。片方だけに設定すれば十分だったのは、その側が共有メモリを使えると相手に知らせなくなり、両方向とも UDP で送るようになるためです。`--ipc host` はコンテナとホストの間の隔離を弱めるので、本チュートリアルでは `fastdds.xml` を使う方法をおすすめします。
 
 検証したのは、`docker compose run` でヘッドレスに起動したスクリプトとの通信だけです。`docker compose up` で起動した Isaac Sim (GUI) とつなぐ場合や、カメラ・LiDAR のトピックは試していません。公式ドキュメントには、ROS 2 を Docker コンテナで動かす手順 (Running ROS in Docker Containers) も載っています。
 
