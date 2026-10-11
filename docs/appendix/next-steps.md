@@ -9,8 +9,8 @@
 
 7 章までで、Python のスタンドアロンスクリプトからシーンを作り、Jetbot を動かし、カメラと LiDAR のデータを取得して障害物回避を行いました。この付録では、そこから先に進むための代表的な方向を紹介します。どれも本チュートリアルの範囲外なので、概要と公式ドキュメントへの入り口だけを示します。
 
-!!! note "この付録の内容はほとんど未検証です"
-    本チュートリアルの検証環境 (Ubuntu 24.04 + RTX 2080 Ti) で確認したのは、[同梱の ROS 2 ライブラリが読み込まれること](#ros2-internal-libs) だけです。トピックの配信・購読や Isaac Lab などは試していません。バージョンの対応関係などは、執筆時点の公式ドキュメントに基づいています。
+!!! note "この付録の内容は一部だけ検証しています"
+    本チュートリアルの検証環境 (Ubuntu 24.04 + RTX 2080 Ti) で確認したのは、[同梱の ROS 2 ライブラリが読み込まれること](#ros2-internal-libs) と、[簡単なトピックの配信・購読](#ros2-pubsub) (`/clock` と `std_msgs/msg/Empty`) だけです。カメラや LiDAR のトピック、Isaac Lab などは試していません。バージョンの対応関係などは、執筆時点の公式ドキュメントに基づいています。
 
 ## ROS 2 との連携 {#ros2}
 
@@ -49,8 +49,102 @@ rclpy loaded
 
 コンテナに ROS 2 は入っていないので、まずシステムの `rclpy` を探して見つからず、次に同梱の Jazzy 用の `rclpy` を読み込んでいます。そのあとで ROS 2 Bridge の拡張機能 (`isaacsim.ros2.bridge`) が起動しています。
 
-!!! tip "Docker で使う場合"
-    公式ドキュメントには、ROS 2 を Docker コンテナで動かす手順 (Running ROS in Docker Containers) も載っています。ROS 2 の環境を Isaac Sim のコンテナと分けておくと、ホストを汚さずに試せます。
+### トピックを配信・購読する {#ros2-pubsub}
+
+Isaac Sim のコンテナと、ROS 2 (Jazzy) の公式 Docker イメージ `ros:jazzy-ros-base` のコンテナの間で、トピックをやり取りしてみます。ROS 2 の環境を Isaac Sim のコンテナと分けておくと、ホストに ROS 2 をインストールせずに試せます。使うサンプルは `examples/appendix_c_ros2/` にあります。
+
+| 向き | トピック | 型 | Isaac Sim 側の仕組み |
+| --- | --- | --- | --- |
+| Isaac Sim → ROS 2 | `/clock` | `rosgraph_msgs/msg/Clock` | OmniGraph の `ROS2PublishClock` ノード |
+| ROS 2 → Isaac Sim | `/move_cube` | `std_msgs/msg/Empty` | 同梱の `rclpy` で作ったノード |
+
+`ros2_pubsub.py` の中心部分は次のとおりです。配信は OmniGraph (ノードをつないで処理を組み立てる仕組み) で、再生中のフレームごとにシミュレーション時刻を `/clock` に流します。購読は普通の `rclpy` のコードで、メインループの中で `rclpy.spin_once()` を呼んでコールバックを動かします。
+
+```python
+# 配信: 再生中は毎フレーム、シミュレーション時刻を /clock に配信する
+og.Controller.edit(
+    {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+    {
+        og.Controller.Keys.CREATE_NODES: [
+            ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+            ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
+            ("PublishClock", "isaacsim.ros2.bridge.ROS2PublishClock"),
+        ],
+        og.Controller.Keys.CONNECT: [
+            ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
+            ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
+        ],
+    },
+)
+
+# 購読: /move_cube を受け取った回数を数える
+rclpy.init()
+node = rclpy.create_node("isaac_sim_tutorial")
+node.create_subscription(Empty, "move_cube", on_move_cube, 10)
+...
+while simulation_app.is_running() and time.time() - start < args.duration:
+    simulation_app.update()
+    rclpy.spin_once(node, timeout_sec=0.0)  # 届いたメッセージのコールバックを呼ぶ
+```
+
+`rclpy` は、`isaacsim.ros2.bridge` を有効にしたあとで import します。有効にする前は、同梱の `rclpy` が読み込まれていないためです。
+
+リポジトリのルートで、1 つ目の端末から Isaac Sim 側を起動します。`FASTRTPS_DEFAULT_PROFILES_FILE` の意味は、このあと説明します。
+
+```bash
+docker compose -f docker/compose.yml run --rm --no-deps \
+  -e FASTRTPS_DEFAULT_PROFILES_FILE=/workspace/examples/appendix_c_ros2/fastdds.xml \
+  --entrypoint /isaac-sim/python.sh isaac-sim \
+  /workspace/examples/appendix_c_ros2/ros2_pubsub.py
+```
+
+`[ros2_pubsub] 開始します (60 秒間)` と表示されたら、2 つ目の端末で ROS 2 のコンテナに入り、トピックを確かめます。
+
+```bash
+docker run --rm -it --network host ros:jazzy-ros-base bash
+# 以下はコンテナ内で実行する
+source /opt/ros/jazzy/setup.bash
+ros2 topic list
+ros2 topic echo --once /clock
+ros2 topic pub --times 3 --rate 1 /move_cube std_msgs/msg/Empty "{}"
+```
+
+検証環境では、`ros2 topic list` に `/clock` と `/move_cube` が表示され、`ros2 topic echo --once /clock` でシミュレーション時刻が届きました。
+
+```text
+clock:
+  sec: 10
+  nanosec: 850000000
+---
+```
+
+`ros2 topic hz /clock` で調べた配信の頻度は約 79 Hz でした。`/clock` はフレームごとに配信されるので、頻度はマシンの速さによって変わります。`/move_cube` を 3 回配信すると、Isaac Sim 側の端末に次のように表示されました。
+
+```text
+[ros2_pubsub] /move_cube を受信しました (1 回目)
+[ros2_pubsub] /move_cube を受信しました (2 回目)
+[ros2_pubsub] /move_cube を受信しました (3 回目)
+```
+
+!!! warning "トピックの一覧には出るのに、データが届かない"
+    `FASTRTPS_DEFAULT_PROFILES_FILE` を設定しないで同じことをすると、検証環境では次のようになりました。
+
+    - `ros2 topic list` には `/clock` と `/move_cube` が表示される
+    - `ros2 topic echo --once /clock` は 10 秒待っても何も表示されない
+    - `/move_cube` を 3 回配信しても、Isaac Sim 側では 1 回も受信しない
+
+    ROS 2 Jazzy が既定で使う通信のミドルウェア Fast DDS は、同じマシンの相手とは共有メモリでデータを送ろうとします。別々のコンテナではこれがうまくいかないため、相手は見つかってもデータが届かないと考えられます。`fastdds.xml` は、通信を UDP だけにする設定です。公式の ROS 2 ワークスペース ([IsaacSim-ros_workspaces](https://github.com/isaac-sim/IsaacSim-ros_workspaces)) の `jazzy_ws/fastdds.xml` と同じもので、環境変数 `FASTRTPS_DEFAULT_PROFILES_FILE` でこのファイルを指定すると読み込まれます。
+
+    検証環境では、Isaac Sim 側と ROS 2 側の **どちらか一方** に設定すれば、両方向ともデータが届きました。ROS 2 側に設定する場合は、`fastdds.xml` をコンテナにマウントして指定します。
+
+    ```bash
+    docker run --rm -it --network host \
+      -v "$PWD/examples/appendix_c_ros2:/cfg:ro" \
+      -e FASTRTPS_DEFAULT_PROFILES_FILE=/cfg/fastdds.xml \
+      ros:jazzy-ros-base bash
+    ```
+
+検証したのは、`docker compose run` でヘッドレスに起動したスクリプトとの通信だけです。`docker compose up` で起動した Isaac Sim (GUI) とつなぐ場合や、カメラ・LiDAR のトピックは試していません。公式ドキュメントには、ROS 2 を Docker コンテナで動かす手順 (Running ROS in Docker Containers) も載っています。
 
 !!! warning "Python のバージョンに注意"
     Isaac Sim 6.1.0 の Python は 3.12 です。`rclpy` で独自のメッセージ型 (Custom ROS Interfaces) を使う場合は、ワークスペースも Python 3.12 でビルドする必要があります。Ubuntu 22.04 + Humble の組み合わせでは標準の Python が 3.10 なので、特に注意してください。
@@ -87,6 +181,7 @@ ROS 2 と Isaac Lab 以外にも、Isaac Sim には次のような機能があ�
 ## まとめ {#summary}
 
 - ROS 2 Bridge を使うと、Isaac Sim を ROS 2 のシステムにつないで、実機と同じノードをシミュレーション上で動かせます。Isaac Sim 6.1.0 は Jazzy と Humble に対応しています
+- Isaac Sim と ROS 2 を別々のコンテナで動かすときは、Fast DDS の通信を UDP だけにする設定 (`fastdds.xml`) を少なくとも一方に入れます。入れないと、トピックの一覧には出てもデータが届きません
 - Isaac Lab を使うと、ロボットの制御方策を強化学習などで学習させられます。Isaac Sim 6.1 に対応するのは `v3.0.0-EA` / `release/3.0.0` で、VRAM 16GB が推奨です
 - このほか、合成データ生成・自作ロボットの取り込み・各種センサなど、目的に応じて公式ドキュメントを読み進めてください
 
